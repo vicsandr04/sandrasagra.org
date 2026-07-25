@@ -1,0 +1,801 @@
+/*
+====================================================
+SANDRASAGRA.ORG
+Universe Mode
+Cinematic Lineage Interface
+====================================================
+*/
+
+
+@font-face {
+
+    font-family:FuturaCustom;
+
+    src:
+        local("Futura"),
+        local("Futura PT"),
+        local("Century Gothic");
+
+}
+
+
+
+* {
+
+    box-sizing:border-box;
+
+}
+
+
+
+html,
+body {
+
+    margin:0;
+
+    padding:0;
+
+    width:100%;
+
+    height:100%;
+
+    overflow:hidden;
+
+    background:#000;
+
+    color:white;
+
+    font-family:
+
+        FuturaCustom,
+        Futura,
+        "Century Gothic",
+        sans-serif;
+
+}
+
+
+
+/*
+====================================================
+UNIVERSE BACKGROUND
+====================================================
+*/
+
+
+#universe {
+
+    position:fixed;
+
+    inset:0;
+
+    width:100vw;
+
+    height:100vh;
+
+    z-index:1;
+
+    overflow:hidden;
+
+}
+
+
+
+#universe svg {
+
+    width:100%;
+
+    height:100%;
+
+}
+
+
+
+/*
+====================================================
+D3 CONSTELLATION
+====================================================
+*/
+
+
+.links line {
+
+    stroke:
+
+        rgba(
+            255,
+            255,
+            255,
+            .18
+        );
+
+
+    stroke-width:1;
+
+
+    transition:
+
+        opacity 2s ease;
+
+}
+
+
+
+.nodes circle {
+
+    stroke:
+
+        rgba(
+            255,
+            255,
+            255,
+            .55
+        );
+
+
+    stroke-width:1.5;
+
+
+    filter:
+
+        drop-shadow(
+            0 0 8px
+            rgba(
+                255,
+                255,
+                255,
+                .45
+            )
+        );
+
+
+}
+
+
+
+.nodes text {
+
+    fill:white;
+
+    font-size:12px;
+
+    letter-spacing:.08em;
+
+    text-shadow:
+
+        0 0 8px #000,
+        0 0 12px #000;
+
+    pointer-events:none;
+
+}
+
+
+
+/*
+====================================================
+INTRO BRAND
+====================================================
+*/
+
+
+#brand {
+
+    position:absolute;
+
+    top:50%;
+
+    left:50%;
+
+
+    transform:
+
+        translate(
+            -50%,
+            -50%
+        );
+
+
+    text-align:center;
+
+
+    z-index:10;
+
+
+    pointer-events:none;
+
+
+    transition:
+
+        top 2s ease,
+        transform 2s ease;
+
+}
+
+
+
+
+#brand h1 {
+
+    margin:0;
+
+
+    font-size:
+
+        clamp(
+            42px,
+            6vw,
+            90px
+        );
+
+
+    font-weight:400;
+
+
+    letter-spacing:
+
+        .20em;
+
+
+    opacity:0;
+
+
+    animation:
+
+        titleFade 2s ease forwards;
+
+}
+
+
+
+
+#brand h2 {
+
+    margin-top:25px;
+
+
+    font-size:
+
+        clamp(
+            18px,
+            2vw,
+            32px
+        );
+
+
+    font-weight:300;
+
+
+    letter-spacing:
+
+        .14em;
+
+
+    opacity:0;
+
+
+    animation:
+
+        subtitleFade 2s ease forwards;
+
+
+    animation-delay:
+
+        2s;
+
+}
+
+
+
+
+
+/*
+====================================================
+RELATE YOURSELF FIELD
+====================================================
+*/
+
+
+#search-panel {
+
+    position:absolute;
+
+
+    top:65%;
+
+
+    left:50%;
+
+
+    transform:
+
+        translate(
+            -50%,
+            -50%
+        );
+
+
+    z-index:20;
+
+
+    opacity:0;
+
+
+    animation:
+
+        searchFade 2s ease forwards;
+
+
+    animation-delay:
+
+        4s;
+
+
+    transition:
+
+        top 2s ease,
+        bottom 2s ease,
+        transform 2s ease;
+
+}
+
+
+
+
+
+#relation-input {
+
+
+    width:380px;
+
+
+    max-width:85vw;
+
+
+    padding:
+
+        18px 32px;
+
+
+
+    border-radius:
+
+        50px;
+
+
+
+    border:
+
+        1px solid
+
+        rgba(
+            255,
+            255,
+            255,
+            .35
+        );
+
+
+
+    background:
+
+        rgba(
+            255,
+            255,
+            255,
+            .06
+        );
+
+
+
+    backdrop-filter:
+
+        blur(12px);
+
+
+
+    color:white;
+
+
+
+    font-family:inherit;
+
+
+
+    font-size:20px;
+
+
+
+    font-weight:300;
+
+
+
+    letter-spacing:.10em;
+
+
+
+    text-align:center;
+
+
+
+    outline:none;
+
+
+
+    box-shadow:
+
+        0 0 30px
+
+        rgba(
+            255,
+            255,
+            255,
+            .08
+        );
+
+
+
+}
+
+
+
+
+
+#relation-input::placeholder {
+
+
+    color:
+
+        rgba(
+            255,
+            255,
+            255,
+            .75
+        );
+
+
+}
+
+
+
+
+
+#relation-input:focus {
+
+
+    border-color:
+
+        rgba(
+            255,
+            255,
+            255,
+            .85
+        );
+
+
+}
+
+
+
+
+
+
+/*
+====================================================
+INTRO TRANSITION STATE
+====================================================
+*/
+
+
+body.universe-active #brand {
+
+
+    top:25px;
+
+
+    transform:
+
+
+        translate(
+            -50%,
+            0
+        )
+
+        scale(.70);
+
+
+
+    transform-origin:
+
+        top center;
+
+
+}
+
+
+
+
+
+body.universe-active #brand h1 {
+
+
+    font-size:
+
+
+        clamp(
+            22px,
+            2vw,
+            34px
+        );
+
+
+    letter-spacing:.25em;
+
+
+}
+
+
+
+
+
+body.universe-active #brand h2 {
+
+
+    margin-top:8px;
+
+
+    font-size:14px;
+
+
+    letter-spacing:.18em;
+
+
+}
+
+
+
+
+
+body.universe-active #search-panel {
+
+
+    top:auto;
+
+
+    bottom:35px;
+
+
+    left:50%;
+
+
+    transform:
+
+
+        translate(
+            -50%,
+            0
+        )
+
+        scale(.85);
+
+
+
+    transform-origin:
+
+        bottom center;
+
+
+}
+
+
+
+
+
+
+
+/*
+====================================================
+TOOLTIP
+====================================================
+*/
+
+
+#tooltip {
+
+
+    position:absolute;
+
+
+    display:none;
+
+
+    z-index:50;
+
+
+    padding:
+
+        12px 18px;
+
+
+
+    background:
+
+        rgba(
+            0,
+            0,
+            0,
+            .75
+        );
+
+
+
+    border:
+
+        1px solid
+
+        rgba(
+            255,
+            255,
+            255,
+            .25
+        );
+
+
+
+    border-radius:10px;
+
+
+
+    backdrop-filter:
+
+        blur(10px);
+
+
+
+    font-size:14px;
+
+
+
+    letter-spacing:.08em;
+
+
+}
+
+
+
+
+
+/*
+====================================================
+ANIMATION
+====================================================
+*/
+
+
+@keyframes titleFade {
+
+
+    from {
+
+        opacity:0;
+
+        transform:
+
+            translateY(30px);
+
+    }
+
+
+    to {
+
+        opacity:1;
+
+        transform:
+
+            translateY(0);
+
+    }
+
+
+}
+
+
+
+
+
+@keyframes subtitleFade {
+
+
+    from {
+
+        opacity:0;
+
+        transform:
+
+            translateY(20px);
+
+    }
+
+
+    to {
+
+        opacity:1;
+
+        transform:
+
+            translateY(0);
+
+    }
+
+
+}
+
+
+
+
+
+@keyframes searchFade {
+
+
+    from {
+
+        opacity:0;
+
+        transform:
+
+            translate(
+                -50%,
+                20px
+            );
+
+    }
+
+
+    to {
+
+        opacity:1;
+
+        transform:
+
+            translate(
+                -50%,
+                0
+            );
+
+    }
+
+
+}
+
+
+
+
+
+/*
+====================================================
+MOBILE
+====================================================
+*/
+
+
+@media(max-width:600px){
+
+
+    #relation-input {
+
+        width:300px;
+
+        font-size:16px;
+
+    }
+
+
+
+    #brand h1 {
+
+        letter-spacing:.12em;
+
+    }
+
+
+}
