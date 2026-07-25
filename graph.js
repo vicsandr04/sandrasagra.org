@@ -53,6 +53,27 @@ const CAMERA = {
 };
 
 
+const App = {
+
+    state: "BOOT",
+
+    introComplete: false,
+
+    universeVisible: false,
+
+    searchEnabled: false,
+
+    searchStarted: false,
+
+    transitionRunning: false,
+
+    cameraEnabled: false,
+
+    animationStarted: false
+
+};
+
+
 //
 // ------------------------------------------------------------
 // GLOBAL STATE
