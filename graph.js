@@ -1785,7 +1785,34 @@ function startAmbientMotion(){
 
             );
 
+            keepLabelsHorizontal();
+
         }
+
+    );
+
+}
+
+function keepLabelsHorizontal() {
+
+    if (!labelSelection)
+        return;
+
+    const counterRotation =
+
+        -universeAngle
+        *
+        180
+        /
+        Math.PI;
+
+    labelSelection.attr(
+
+        "transform",
+
+        d =>
+
+            `rotate(${counterRotation},${d.x},${d.y - 12})`
 
     );
 
