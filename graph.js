@@ -380,10 +380,6 @@ function fadeUniverse() {
 
             setState("READY");
 
-            document
-                .getElementById("relation-input")
-                ?.focus();
-
         },
 
         1200
@@ -1143,9 +1139,27 @@ function startAmbientMotion(){
 
 function cameraTransform(){
 
-    const scale =
+    const person =
 
         focusedPerson
+        &&
+        graph
+
+        ?
+
+        graph.nodes.find(
+
+            node => node.id === focusedPerson
+
+        )
+
+        :
+
+        null;
+
+    const scale =
+
+        person
 
         ?
 
@@ -1158,6 +1172,12 @@ function cameraTransform(){
     const rotate =
 
         universeAngle*180/Math.PI;
+
+    if (person) {
+
+        return `translate(${CAMERA.x},${CAMERA.y}) translate(${person.x},${person.y}) scale(${scale}) rotate(${rotate}) translate(${-person.x},${-person.y})`;
+
+    }
 
     return `translate(${CAMERA.x},${CAMERA.y}) scale(${scale}) rotate(${rotate},${width/2},${height/2})`;
 

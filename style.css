@@ -244,6 +244,11 @@ INTRO BRAND
 
         titleFade 2s ease forwards;
 
+    transition:
+
+        font-size 2s ease,
+        letter-spacing 2s ease;
+
 }
 
 
@@ -523,9 +528,9 @@ body.universe-active #brand h1 {
 
 
         clamp(
-            22px,
-            2vw,
-            34px
+            33px,
+            3vw,
+            51px
         );
 
 
@@ -591,6 +596,71 @@ body.universe-active #search-panel {
 
 
 
+
+
+/*
+====================================================
+LINEAGE LOGIN
+====================================================
+*/
+
+
+#lineage-login {
+
+    position:fixed;
+
+    top:28px;
+
+    right:32px;
+
+    z-index:30;
+
+    color:rgba(255,255,255,.72);
+
+    font-size:14px;
+
+    font-weight:300;
+
+    letter-spacing:.08em;
+
+    text-decoration:none;
+
+    opacity:0;
+
+    animation:
+
+        loginFade 2s ease forwards;
+
+    animation-delay:2s;
+
+    transition:
+
+        color .3s ease,
+        text-shadow .3s ease;
+
+}
+
+
+#lineage-login:hover,
+#lineage-login:focus-visible {
+
+    color:white;
+
+    text-shadow:
+
+        0 0 12px
+        rgba(255,255,255,.45);
+
+}
+
+
+body:not(.universe-active) #relation-input {
+
+    animation:
+
+        inputPulse 2.8s ease-in-out infinite;
+
+}
 
 
 /*
@@ -771,6 +841,61 @@ ANIMATION
 
 
 
+@keyframes loginFade {
+
+
+    from {
+
+        opacity:0;
+
+        transform:translateY(-12px);
+
+    }
+
+
+    to {
+
+        opacity:1;
+
+        transform:translateY(0);
+
+    }
+
+
+}
+
+
+@keyframes inputPulse {
+
+
+    0%,
+    100% {
+
+        border-color:rgba(255,255,255,.28);
+
+        box-shadow:
+
+            0 0 24px
+            rgba(255,255,255,.05);
+
+    }
+
+
+    50% {
+
+        border-color:rgba(255,255,255,.72);
+
+        box-shadow:
+
+            0 0 42px
+            rgba(255,255,255,.18);
+
+    }
+
+
+}
+
+
 /*
 ====================================================
 MOBILE
@@ -779,6 +904,21 @@ MOBILE
 
 
 @media(max-width:600px){
+
+
+    #lineage-login {
+
+        top:18px;
+
+        right:18px;
+
+        max-width:55vw;
+
+        font-size:11px;
+
+        text-align:right;
+
+    }
 
 
     #relation-input {
