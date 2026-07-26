@@ -374,13 +374,15 @@ function fadeUniverse() {
 
         () => {
 
-            document.body.classList.add(
-
-                "universe-active"
-
-            );
-
+            App.universeVisible = true;
             App.introComplete = true;
+            App.searchEnabled = true;
+
+            setState("READY");
+
+            document
+                .getElementById("relation-input")
+                ?.focus();
 
         },
 
@@ -754,6 +756,13 @@ function setupSearch() {
             )
                 return;
 
+            if (
+                !App.searchEnabled
+                ||
+                !graph
+            )
+                return;
+
             const value =
                 input.value.trim().toLowerCase();
 
@@ -774,9 +783,49 @@ function setupSearch() {
             if (!person)
                 return;
 
+            if (!App.searchStarted) {
+
+                beginExploration(person);
+
+                return;
+
+            }
+
             focusPerson(person);
 
         }
+
+    );
+
+}
+
+function beginExploration(person) {
+
+    App.searchStarted = true;
+    App.transitionRunning = true;
+    App.cameraEnabled = true;
+
+    setState("TRANSITION");
+
+    document.body.classList.add(
+
+        "universe-active"
+
+    );
+
+    focusPerson(person);
+
+    setTimeout(
+
+        () => {
+
+            App.transitionRunning = false;
+
+            setState("EXPLORE");
+
+        },
+
+        2000
 
     );
 
