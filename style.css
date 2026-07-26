@@ -783,18 +783,27 @@ body:not(.universe-active) #relation-input {
 
     caret-color:transparent;
 
+}
+
+
+#relation-input {
+
     animation:
 
         inputPulse 2.8s ease-in-out infinite;
 
+    animation-delay:4s;
+
 }
 
 
-body:not(.universe-active) #relation-input::placeholder {
+#relation-input::placeholder {
 
     animation:
 
         placeholderPulse 2.8s ease-in-out infinite;
+
+    animation-delay:4s;
 
 }
 

@@ -30,6 +30,16 @@ const INTRO = {
 
 };
 
+const SEARCH_PROMPTS = [
+
+    "Relate yourself",
+
+    "Find your relation"
+
+];
+
+const SEARCH_PULSE_DURATION = 2800;
+
 
 const STAR = {
 
@@ -780,6 +790,8 @@ function setupSearch() {
     if (!input)
         return;
 
+    startSearchPromptRotation(input);
+
     input.addEventListener(
 
         "click",
@@ -851,6 +863,46 @@ function setupSearch() {
             focusPerson(person);
 
         }
+
+    );
+
+}
+
+function startSearchPromptRotation(input) {
+
+    let promptIndex = 0;
+
+    setTimeout(
+
+        () => {
+
+            setInterval(
+
+                () => {
+
+                    promptIndex =
+
+                        (
+                            promptIndex
+                            +
+                            1
+                        )
+                        %
+                        SEARCH_PROMPTS.length;
+
+                    input.placeholder =
+
+                        SEARCH_PROMPTS[promptIndex];
+
+                },
+
+                SEARCH_PULSE_DURATION
+
+            );
+
+        },
+
+        4000
 
     );
 
