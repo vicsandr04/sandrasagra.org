@@ -57,6 +57,8 @@ const App = {
 
     state: "BOOT",
 
+    universeReady: false,
+
     introComplete: false,
 
     universeVisible: false,
@@ -72,6 +74,14 @@ const App = {
     animationStarted: false
 
 };
+
+function setState(nextState) {
+
+    App.state = nextState;
+
+    console.log("[Universe]", nextState);
+
+}
 
 
 //
@@ -106,10 +116,6 @@ let labelSelection;
 
 let focusedPerson = null;
 
-let universeReady = false;
-
-let introComplete = false;
-
 
 //
 // ------------------------------------------------------------
@@ -122,6 +128,8 @@ document.addEventListener(
     "DOMContentLoaded",
 
     () => {
+
+        setState("BOOT");
 
         createSVG();
 
@@ -264,7 +272,7 @@ async function loadUniverse() {
 
 function initialiseUniverse(data) {
 
-    universeReady = true;
+    App.universeReady = true;
 
     buildLinks(
 
@@ -372,7 +380,7 @@ function fadeUniverse() {
 
             );
 
-            introComplete = true;
+            App.introComplete = true;
 
         },
 
