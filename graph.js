@@ -510,7 +510,7 @@ function buildLabels(nodes) {
 
         .attr("font-size","12px")
 
-        .attr("fill","white")
+        .attr("fill","#FC4C02")
 
         .attr("text-anchor","middle")
 
@@ -781,6 +781,30 @@ function setupSearch() {
         return;
 
     input.addEventListener(
+
+        "click",
+
+        () => {
+
+            if (
+                !App.searchStarted
+                ||
+                input.dataset.selectedPerson
+                !==
+                "true"
+            )
+                return;
+
+            input.value = "";
+
+            input.dataset.selectedPerson = "false";
+
+        }
+
+    );
+
+    input.addEventListener(
+
         "keydown",
         event => {
 
@@ -891,6 +915,8 @@ function focusPerson(person) {
             person.display_name
             ||
             "";
+
+        input.dataset.selectedPerson = "true";
 
     }
 
@@ -1585,7 +1611,7 @@ function createTooltip() {
 
         .style("backdrop-filter","blur(12px)")
 
-        .style("color","white")
+        .style("color","#FC4C02")
 
         .style("font-family","inherit")
 
