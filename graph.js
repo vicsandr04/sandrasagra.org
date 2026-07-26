@@ -1677,19 +1677,29 @@ function nodeHover(event,d){
 
         .attr("opacity",1);
 
-    tooltip
+    const relationshipPath =
 
-        .style("opacity",1)
+        focusedPerson
 
-        .text(
+        ?
 
-            d.name
-            ||
-            d.display_name
-            ||
-            ""
+        findRelationshipPath(
+
+            focusedPerson,
+
+            d.id
 
         )
+
+        :
+
+        null;
+
+    tooltip
+
+        .html("")
+
+        .style("opacity",1)
 
         .style(
 
@@ -1706,6 +1716,360 @@ function nodeHover(event,d){
             (event.pageY-10)+"px"
 
         );
+
+    tooltip
+
+        .append("strong")
+
+        .text(
+
+            d.name
+            ||
+            d.display_name
+            ||
+            ""
+
+        );
+
+    const nicknames = personNicknames(d);
+
+    if (nicknames.length) {
+
+        tooltip
+
+            .append("div")
+
+            .style("margin-top","4px")
+
+            .style("font-style","italic")
+
+            .text(
+
+                "Nickname"
+                +
+                (
+                    nicknames.length > 1
+                    ?
+                    "s"
+                    :
+                    ""
+                )
+                +
+                ": "
+                +
+                nicknames
+
+                    .map(name => `“${name}”`)
+
+                    .join(", ")
+
+            );
+
+    }
+
+    if (relationshipPath) {
+
+        tooltip
+
+            .append("div")
+
+            .style("margin-top","6px")
+
+            .text(
+
+                "Relationship: "
+                +
+                relationshipLabel(
+
+                    relationshipPath.relationships
+
+                )
+
+            );
+
+        tooltip
+
+            .append("div")
+
+            .style("margin-top","4px")
+
+            .style("opacity",.78)
+
+            .text(
+
+                "Path from focus: "
+                +
+                relationshipPath.nodes
+
+                    .map(personId =>
+
+                        personName(personId)
+
+                    )
+
+                    .join(" → ")
+
+            );
+
+    }
+
+}
+
+function personNicknames(person) {
+
+    const candidates = [
+
+        person.nickname,
+
+        person.nick_name,
+
+        person.nicknames,
+
+        person.call_name,
+
+        person.preferred_name,
+
+        person.aliases
+
+    ];
+
+    return [
+
+        ...new Set(
+
+            candidates
+
+                .flatMap(value =>
+
+                    Array.isArray(value)
+                    ?
+                    value
+                    :
+                    [value]
+
+                )
+
+                .filter(value =>
+
+                    typeof value === "string"
+                    &&
+                    value.trim()
+
+                )
+
+                .map(value => value.trim())
+
+        )
+
+    ];
+
+}
+
+function findRelationshipPath(startId, endId) {
+
+    const start = String(startId);
+    const end = String(endId);
+
+    if (start === end) {
+
+        return {
+
+            nodes: [start],
+
+            relationships: []
+
+        };
+
+    }
+
+    const neighbours = new Map();
+
+    graph.links.forEach(link => {
+
+        const source = String(
+
+            link.source.id
+            ??
+            link.source
+
+        );
+
+        const target = String(
+
+            link.target.id
+            ??
+            link.target
+
+        );
+
+        if (!neighbours.has(source))
+            neighbours.set(source, []);
+
+        if (!neighbours.has(target))
+            neighbours.set(target, []);
+
+        if (link.type === "spouse") {
+
+            neighbours.get(source).push({
+
+                id: target,
+
+                relationship: "spouse"
+
+            });
+
+            neighbours.get(target).push({
+
+                id: source,
+
+                relationship: "spouse"
+
+            });
+
+            return;
+
+        }
+
+        neighbours.get(source).push({
+
+            id: target,
+
+            relationship: "child"
+
+        });
+
+        neighbours.get(target).push({
+
+            id: source,
+
+            relationship: "parent"
+
+        });
+
+    });
+
+    const queue = [{
+
+        id: start,
+
+        nodes: [start],
+
+        relationships: []
+
+    }];
+
+    const visited = new Set([start]);
+
+    while (queue.length) {
+
+        const current = queue.shift();
+
+        for (
+            const next
+            of
+            neighbours.get(current.id) || []
+        ) {
+
+            if (visited.has(next.id))
+                continue;
+
+            const path = {
+
+                id: next.id,
+
+                nodes: [
+
+                    ...current.nodes,
+
+                    next.id
+
+                ],
+
+                relationships: [
+
+                    ...current.relationships,
+
+                    next.relationship
+
+                ]
+
+            };
+
+            if (next.id === end)
+                return path;
+
+            visited.add(next.id);
+
+            queue.push(path);
+
+        }
+
+    }
+
+    return null;
+
+}
+
+function relationshipLabel(relationships) {
+
+    const signature = relationships.join(">");
+
+    const labels = {
+
+        "": "Person in focus",
+
+        "parent": "Parent",
+
+        "child": "Child",
+
+        "spouse": "Spouse",
+
+        "parent>child": "Sibling",
+
+        "parent>parent": "Grandparent",
+
+        "child>child": "Grandchild",
+
+        "parent>parent>child": "Aunt or uncle",
+
+        "parent>child>child": "Niece or nephew",
+
+        "parent>parent>child>child": "Cousin"
+
+    };
+
+    return (
+
+        labels[signature]
+        ||
+        `${relationships.length} degrees away`
+
+    );
+
+}
+
+function personName(id) {
+
+    const person =
+
+        graph.nodes.find(
+
+            node => String(node.id) === String(id)
+
+        );
+
+    if (!person)
+        return "Unknown";
+
+    return (
+
+        person.display_name
+        ||
+        person.name
+        ||
+        "Unknown"
+
+    );
 
 }
 

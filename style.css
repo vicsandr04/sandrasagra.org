@@ -812,7 +812,7 @@ TOOLTIP
     position:absolute;
 
 
-    display:none;
+    display:block;
 
 
     z-index:50;
