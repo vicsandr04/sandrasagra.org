@@ -66,13 +66,13 @@ const FAMILY_LAYOUT = {
 
     zoom: 1.65,
 
-    parentY: -160,
+    parentY: -190,
 
-    spouseX: 220,
+    spouseX: 250,
 
-    childY: 190,
+    childY: 220,
 
-    spacing: 180
+    spacing: 220
 
 };
 
@@ -450,6 +450,36 @@ function fadeUniverse() {
 
     );
 
+    d3.selectAll(
+
+        ".labels text"
+
+    )
+
+    .style(
+
+        "opacity",
+
+        0
+
+    )
+
+    .transition()
+
+    .duration(
+
+        2800
+
+    )
+
+    .style(
+
+        "opacity",
+
+        .62
+
+    );
+
     setTimeout(
 
         () => {
@@ -553,7 +583,13 @@ function buildLabels(nodes) {
 
         )
 
-        .attr("font-size","12px")
+        .attr(
+
+            "font-size",
+
+            `${globalLabelSize()}px`
+
+        )
 
         .attr("fill","white")
 
@@ -589,7 +625,7 @@ function buildSimulation(data) {
 
                 d3.forceManyBody()
 
-                    .strength(-60)
+                    .strength(-85)
 
             )
 
@@ -613,7 +649,9 @@ function buildSimulation(data) {
 
                 d3.forceCollide()
 
-                    .radius(8)
+                    .radius(nodeLabelCollisionRadius)
+
+                    .iterations(2)
 
             )
 
@@ -733,15 +771,15 @@ function linkDistance(link) {
 
         case "spouse":
 
-            return 35;
+            return 55;
 
         case "parent":
 
-            return 55;
+            return 75;
 
         default:
 
-            return 70;
+            return 95;
 
     }
 
@@ -827,16 +865,30 @@ function setupSearch() {
 
     startSearchPromptRotation(input);
 
+    const clearSearchField = () => {
+
+        input.value = "";
+
+        input.placeholder = "";
+
+    };
+
     input.addEventListener(
 
         "click",
 
+        clearSearchField
+
+    );
+
+    input.addEventListener(
+
+        "blur",
+
         () => {
 
-            if (!App.searchStarted)
-                return;
-
-            input.value = "";
+            if (!input.value)
+                input.placeholder = SEARCH_PROMPTS[0];
 
         }
 
@@ -906,6 +958,13 @@ function startSearchPromptRotation(input) {
             setInterval(
 
                 () => {
+
+                    if (
+                        document.activeElement
+                        ===
+                        input
+                    )
+                        return;
 
                     promptIndex =
 
@@ -1164,7 +1223,7 @@ async function illuminateFamily(id) {
 
             d =>
 
-                shouldDisplayLabel(
+                Number.isFinite(
 
                     separation.get(String(d.id))
 
@@ -1172,7 +1231,7 @@ async function illuminateFamily(id) {
 
                 ? 1
 
-                : 0
+                : .48
 
         );
 
@@ -1269,26 +1328,26 @@ function labelSizeForSeparation(separation) {
 
         width <= 600
         ?
-        0.82
+        0.76
         :
         (
             width <= 1024
             ?
-            0.92
+            0.86
             :
             1
         );
 
     if (separation === 0)
-        return 16 * sizeScale;
-
-    if (separation === 1)
         return 13 * sizeScale;
 
-    if (separation === 2)
-        return 11 * sizeScale;
+    if (separation === 1)
+        return 10.5 * sizeScale;
 
-    return 9 * sizeScale;
+    if (separation === 2)
+        return 8.5 * sizeScale;
+
+    return 7 * sizeScale;
 
 }
 
@@ -1304,18 +1363,6 @@ function nodeSizeForSeparation(separation, id) {
         return 4;
 
     return baseNodeRadius();
-
-}
-
-function shouldDisplayLabel(separation) {
-
-    return (
-
-        Number.isFinite(separation)
-        &&
-        separation <= 3
-
-    );
 
 }
 
@@ -1603,9 +1650,11 @@ function applyImmediateFamilyLayout(id) {
                         ?
                         focusedLabelRadius(node)
                         :
-                        8
+                        nodeLabelCollisionRadius(node)
 
                 )
+
+                .iterations(2)
 
         )
 
@@ -1716,13 +1765,77 @@ function focusedLabelRadius(node) {
 
     return Math.max(
 
-        42,
+        30,
 
         Math.min(
 
             maximumRadius,
 
             name.length * characterWidth
+
+        )
+
+    );
+
+}
+
+function globalLabelSize() {
+
+    if (width <= 600)
+        return 5.5;
+
+    if (width <= 1024)
+        return 6.25;
+
+    return 7;
+
+}
+
+function nodeLabelCollisionRadius(node) {
+
+    const name =
+
+        String(
+
+            node.display_name
+            ||
+            node.name
+            ||
+            ""
+
+        );
+
+    const estimatedHalfWidth =
+
+        name.length
+        *
+        globalLabelSize()
+        *
+        .29;
+
+    const maximumRadius =
+
+        width <= 600
+        ?
+        72
+        :
+        (
+            width <= 1024
+            ?
+            92
+            :
+            115
+        );
+
+    return Math.max(
+
+        16,
+
+        Math.min(
+
+            maximumRadius,
+
+            estimatedHalfWidth + 12
 
         )
 
@@ -1738,13 +1851,13 @@ function familyLayoutForViewport() {
 
             zoom: 1.25,
 
-            parentY: -105,
+            parentY: -135,
 
-            spouseX: 125,
+            spouseX: 160,
 
-            childY: 120,
+            childY: 150,
 
-            spacing: 105
+            spacing: 145
 
         };
 
@@ -1756,13 +1869,13 @@ function familyLayoutForViewport() {
 
             zoom: 1.42,
 
-            parentY: -135,
+            parentY: -165,
 
-            spouseX: 170,
+            spouseX: 205,
 
-            childY: 155,
+            childY: 185,
 
-            spacing: 145
+            spacing: 185
 
         };
 
@@ -2593,7 +2706,9 @@ function resetUniverse(){
 
             d3.forceCollide()
 
-                .radius(8)
+                .radius(nodeLabelCollisionRadius)
+
+                .iterations(2)
 
         )
 
@@ -2639,9 +2754,15 @@ function resetUniverse(){
 
         .transition()
 
-        .style("font-size","12px")
+        .style(
 
-        .style("opacity",0);
+            "font-size",
+
+            `${globalLabelSize()}px`
+
+        )
+
+        .style("opacity",.62);
 
     linkSelection
 
