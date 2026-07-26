@@ -56,13 +56,13 @@ const FAMILY_LAYOUT = {
 
     zoom: 1.65,
 
-    parentY: -115,
+    parentY: -160,
 
-    spouseX: 115,
+    spouseX: 220,
 
-    childY: 135,
+    childY: 190,
 
-    spacing: 95
+    spacing: 180
 
 };
 
@@ -1504,7 +1504,7 @@ function applyImmediateFamilyLayout(id) {
                         )
 
                         ?
-                        28
+                        focusedLabelRadius(node)
                         :
                         8
 
@@ -1528,13 +1528,7 @@ function arrangeFamilyRow(ids, centerX, y) {
 
         ?
 
-        Math.min(
-
-            FAMILY_LAYOUT.spacing,
-
-            520 / (uniqueIds.length - 1)
-
-        )
+        FAMILY_LAYOUT.spacing
 
         :
 
@@ -1566,6 +1560,48 @@ function arrangeFamilyRow(ids, centerX, y) {
         );
 
     });
+
+}
+
+function focusedLabelRadius(node) {
+
+    const name =
+
+        String(node.id) === String(focusedPerson)
+
+        ?
+
+        (
+            node.name
+            ||
+            node.display_name
+            ||
+            ""
+        )
+
+        :
+
+        (
+            node.display_name
+            ||
+            node.name
+            ||
+            ""
+        );
+
+    return Math.max(
+
+        42,
+
+        Math.min(
+
+            220,
+
+            name.length * 4.5
+
+        )
+
+    );
 
 }
 

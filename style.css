@@ -474,6 +474,8 @@ RELATE YOURSELF FIELD
 
     color:white;
 
+    -webkit-text-fill-color:currentColor;
+
 
 
     font-family:inherit;
@@ -531,9 +533,9 @@ RELATE YOURSELF FIELD
     color:
 
         rgba(
-            252,
-            76,
-            2,
+            255,
+            255,
+            255,
             .75
         );
 
@@ -542,6 +544,28 @@ RELATE YOURSELF FIELD
 
 
 
+
+
+#relation-input::placeholder {
+
+    -webkit-text-fill-color:currentColor;
+
+}
+
+
+#relation-input:-webkit-autofill,
+#relation-input:-webkit-autofill:hover,
+#relation-input:-webkit-autofill:focus {
+
+    -webkit-text-fill-color:white !important;
+
+    box-shadow:
+
+        0 0 0 1000px
+        rgba(0,20,137,.35)
+        inset;
+
+}
 
 
 #relation-input::-webkit-search-cancel-button {
