@@ -202,6 +202,19 @@ function createSVG() {
 
     svg.call(zoomBehavior);
 
+    svg.on(
+
+        "click.touch-tooltip",
+
+        () => {
+
+            if (isTouchDevice())
+                hideTooltip();
+
+        }
+
+    );
+
     rootGroup = svg
         .append("g")
         .attr("class", "camera");
@@ -516,7 +529,9 @@ function buildNodes(nodes) {
 
         .on("mouseout", nodeOut)
 
-        .on("click", nodeClick);
+        .on("click", nodeClick)
+
+        .on("dblclick", nodeDoubleClick);
 
 }
 
@@ -1853,6 +1868,12 @@ function nodeHover(event,d){
 
         .attr("opacity",1);
 
+    showNodeTooltip(event,d);
+
+}
+
+function showNodeTooltip(event,d) {
+
     const relationshipPath =
 
         focusedPerson
@@ -2251,6 +2272,9 @@ function personName(id) {
 
 function nodeOut(){
 
+    if (isTouchDevice())
+        return;
+
     nodeSelection
 
         .filter(
@@ -2279,30 +2303,84 @@ function nodeOut(){
 
         );
 
-    tooltip
-
-        .style(
-
-            "opacity",
-
-            0
-
-        );
+    hideTooltip();
 
 }
 
 function nodeClick(event,d){
 
+    event.stopPropagation();
+
+    if (isTouchDevice()) {
+
+        d3.select(this)
+
+            .interrupt()
+
+            .attr(
+
+                "r",
+
+                String(focusedPerson)
+                ===
+                String(d.id)
+                ?
+                8
+                :
+                6
+
+            )
+
+            .attr("opacity",1);
+
+        showNodeTooltip(event,d);
+
+        return;
+
+    }
+
     focusPerson(d);
 
-    if (
-        window.matchMedia(
+}
 
-            "(hover: none), (pointer: coarse)"
+function nodeDoubleClick(event,d) {
 
-        ).matches
-    )
-        nodeHover.call(this,event,d);
+    if (!isTouchDevice())
+        return;
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    focusPerson(d);
+
+    d3.select(this)
+
+        .interrupt()
+
+        .attr("r",8)
+
+        .attr("opacity",1);
+
+    showNodeTooltip(event,d);
+
+}
+
+function isTouchDevice() {
+
+    return window.matchMedia(
+
+        "(hover: none), (pointer: coarse)"
+
+    ).matches;
+
+}
+
+function hideTooltip() {
+
+    if (!tooltip)
+        return;
+
+    tooltip.style("opacity",0);
 
 }
 
