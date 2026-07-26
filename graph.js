@@ -794,22 +794,48 @@ function setupSearch() {
 
     input.addEventListener(
 
-        "click",
+        "pointerdown",
 
         () => {
 
             if (
                 !App.searchStarted
                 ||
-                input.dataset.selectedPerson
+                !focusedPerson
+            )
+                return;
+
+            const selected =
+
+                graph.nodes.find(
+
+                    person =>
+
+                        String(person.id)
+                        ===
+                        String(focusedPerson)
+
+                );
+
+            if (!selected)
+                return;
+
+            const selectedName =
+
+                selected.name
+                ||
+                selected.display_name
+                ||
+                "";
+
+            if (
+                input.value.trim()
                 !==
-                "true"
+                selectedName.trim()
             )
                 return;
 
             input.value = "";
-
-            input.dataset.selectedPerson = "false";
 
         }
 
@@ -967,8 +993,6 @@ function focusPerson(person) {
             person.display_name
             ||
             "";
-
-        input.dataset.selectedPerson = "true";
 
     }
 
