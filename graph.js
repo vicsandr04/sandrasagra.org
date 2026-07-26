@@ -794,45 +794,11 @@ function setupSearch() {
 
     input.addEventListener(
 
-        "pointerdown",
+        "click",
 
         () => {
 
-            if (
-                !App.searchStarted
-                ||
-                !focusedPerson
-            )
-                return;
-
-            const selected =
-
-                graph.nodes.find(
-
-                    person =>
-
-                        String(person.id)
-                        ===
-                        String(focusedPerson)
-
-                );
-
-            if (!selected)
-                return;
-
-            const selectedName =
-
-                selected.name
-                ||
-                selected.display_name
-                ||
-                "";
-
-            if (
-                input.value.trim()
-                !==
-                selectedName.trim()
-            )
+            if (!App.searchStarted)
                 return;
 
             input.value = "";
