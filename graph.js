@@ -2452,6 +2452,14 @@ function nodeClick(event,d){
 
     }
 
+    if (!App.searchStarted) {
+
+        beginExploration(d);
+
+        return;
+
+    }
+
     focusPerson(d);
 
 }
@@ -2464,7 +2472,10 @@ function nodeDoubleClick(event,d) {
     event.preventDefault();
     event.stopPropagation();
 
-    focusPerson(d);
+    if (!App.searchStarted)
+        beginExploration(d);
+    else
+        focusPerson(d);
 
     d3.select(this)
 
