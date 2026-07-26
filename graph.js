@@ -102,6 +102,10 @@ let labelLayer;
 
 let simulation;
 
+let zoomBehavior;
+
+let userView = d3.zoomIdentity;
+
 let width = window.innerWidth;
 
 let height = window.innerHeight;
@@ -154,6 +158,23 @@ function createSVG() {
         .append("svg")
         .attr("width", width)
         .attr("height", height);
+
+    zoomBehavior = d3
+        .zoom()
+        .scaleExtent([0.55, 4.5])
+        .on(
+
+            "zoom",
+
+            event => {
+
+                userView = event.transform;
+
+            }
+
+        );
+
+    svg.call(zoomBehavior);
 
     rootGroup = svg
         .append("g")
@@ -837,6 +858,16 @@ function focusPerson(person) {
 
     focusedPerson = person.id;
 
+    userView = d3.zoomIdentity;
+
+    svg.call(
+
+        zoomBehavior.transform,
+
+        d3.zoomIdentity
+
+    );
+
     flyCameraTo(person);
 
     illuminateFamily(person.id);
@@ -940,6 +971,30 @@ async function illuminateFamily(id) {
         );
 
     labelSelection
+
+        .text(
+
+            d =>
+
+                String(d.id) === String(id)
+
+                ?
+
+                (
+                    d.name
+                    ||
+                    d.display_name
+                )
+
+                :
+
+                (
+                    d.display_name
+                    ||
+                    d.name
+                )
+
+        )
 
         .transition()
 
@@ -1167,13 +1222,13 @@ function nodeHover(event,d){
 
         .style("opacity",1)
 
-        .html(
+        .text(
 
-            "<strong>"
-
-            +(d.display_name||d.name)+
-
-            "</strong>"
+            d.name
+            ||
+            d.display_name
+            ||
+            ""
 
         )
 
@@ -1315,11 +1370,11 @@ function cameraTransform(){
 
     if (person) {
 
-        return `translate(${CAMERA.x},${CAMERA.y}) translate(${person.x},${person.y}) scale(${scale}) rotate(${rotate}) translate(${-person.x},${-person.y})`;
+        return `${userView} translate(${CAMERA.x},${CAMERA.y}) translate(${person.x},${person.y}) scale(${scale}) rotate(${rotate}) translate(${-person.x},${-person.y})`;
 
     }
 
-    return `translate(${CAMERA.x},${CAMERA.y}) scale(${scale}) rotate(${rotate},${width/2},${height/2})`;
+    return `${userView} translate(${CAMERA.x},${CAMERA.y}) scale(${scale}) rotate(${rotate},${width/2},${height/2})`;
 
 }
 
@@ -1411,6 +1466,16 @@ function resetUniverse(){
 
     focusedPerson=null;
 
+    userView=d3.zoomIdentity;
+
+    svg.call(
+
+        zoomBehavior.transform,
+
+        d3.zoomIdentity
+
+    );
+
     CAMERA.x=0;
 
     CAMERA.y=0;
@@ -1426,6 +1491,16 @@ function resetUniverse(){
         .attr("opacity",STAR.opacity);
 
     labelSelection
+
+        .text(
+
+            d =>
+
+                d.display_name
+                ||
+                d.name
+
+        )
 
         .transition()
 
