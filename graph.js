@@ -964,7 +964,9 @@ async function illuminateFamily(id) {
 
                 nodeSizeForSeparation(
 
-                    separation.get(String(d.id))
+                    separation.get(String(d.id)),
+
+                    String(d.id)
 
                 )
 
@@ -1173,12 +1175,12 @@ function labelSizeForSeparation(separation) {
 
 }
 
-function nodeSizeForSeparation(separation) {
+function nodeSizeForSeparation(separation, id) {
 
     if (separation === 0)
         return 8;
 
-    if (separation === 1)
+    if (familyLayoutTargets.has(id))
         return 6;
 
     if (separation === 2)
@@ -1216,6 +1218,7 @@ function applyImmediateFamilyLayout(id) {
         return;
 
     const parents = [];
+    const siblings = [];
     const spouses = [];
     const children = [];
 
@@ -1260,6 +1263,38 @@ function applyImmediateFamilyLayout(id) {
 
     });
 
+    const parentIds = new Set(parents);
+
+    graph.links.forEach(link => {
+
+        if (link.type !== "parent")
+            return;
+
+        const source = String(
+
+            link.source.id
+            ??
+            link.source
+
+        );
+
+        const target = String(
+
+            link.target.id
+            ??
+            link.target
+
+        );
+
+        if (
+            parentIds.has(source)
+            &&
+            target !== selectedId
+        )
+            siblings.push(target);
+
+    });
+
     familyLayoutTargets = new Map([
 
         [
@@ -1282,19 +1317,7 @@ function applyImmediateFamilyLayout(id) {
 
     );
 
-    spouses.forEach((spouseId, index) => {
-
-        const direction =
-
-            index % 2 === 0
-            ?
-            1
-            :
-            -1;
-
-        const step =
-
-            Math.floor(index / 2) + 1;
+    [...new Set(spouses)].forEach((spouseId, index) => {
 
         familyLayoutTargets.set(
 
@@ -1304,11 +1327,30 @@ function applyImmediateFamilyLayout(id) {
                 x:
                     selected.x
                     +
-                    direction
-                    *
                     FAMILY_LAYOUT.spouseX
                     *
-                    step,
+                    (index + 1),
+
+                y: selected.y
+            }
+
+        );
+
+    });
+
+    [...new Set(siblings)].forEach((siblingId, index) => {
+
+        familyLayoutTargets.set(
+
+            siblingId,
+
+            {
+                x:
+                    selected.x
+                    -
+                    FAMILY_LAYOUT.spouseX
+                    *
+                    (index + 1),
 
                 y: selected.y
             }
