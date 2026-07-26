@@ -43,7 +43,7 @@ body {
 
     background:#001489;
 
-    color:#FC4C02;
+    color:white;
 
     font-family:
 
@@ -220,7 +220,7 @@ D3 CONSTELLATION
 
 .nodes text {
 
-    fill:#FC4C02;
+    fill:white;
 
     font-size:12px;
 
@@ -296,7 +296,7 @@ INTRO BRAND
 
     font-weight:400;
 
-    color:#FC4C02;
+    color:white;
 
 
     letter-spacing:
@@ -472,7 +472,7 @@ RELATE YOURSELF FIELD
 
 
 
-    color:#FC4C02;
+    color:white;
 
 
 
@@ -707,7 +707,7 @@ LINEAGE LOGIN
 
     z-index:30;
 
-    color:rgba(252,76,2,.78);
+    color:rgba(255,255,255,.78);
 
     font-size:24px;
 
@@ -736,12 +736,21 @@ LINEAGE LOGIN
 #lineage-login:hover,
 #lineage-login:focus-visible {
 
-    color:#FC4C02;
+    color:white;
 
     text-shadow:
 
         0 0 12px
-        rgba(252,76,2,.55);
+        rgba(255,255,255,.55);
+
+}
+
+
+#lineage-login span {
+
+    text-decoration:underline;
+
+    text-underline-offset:.18em;
 
 }
 
@@ -997,7 +1006,7 @@ ANIMATION
     0%,
     100% {
 
-        color:rgba(252,76,2,.72);
+        color:rgba(255,255,255,.72);
 
         background:
 
@@ -1020,7 +1029,7 @@ ANIMATION
 
     50% {
 
-        color:#FC4C02;
+        color:white;
 
         background:
 
@@ -1050,14 +1059,14 @@ ANIMATION
     0%,
     100% {
 
-        color:rgba(252,76,2,.55);
+        color:rgba(255,255,255,.55);
 
     }
 
 
     50% {
 
-        color:#FC4C02;
+        color:white;
 
     }
 

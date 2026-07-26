@@ -510,7 +510,7 @@ function buildLabels(nodes) {
 
         .attr("font-size","12px")
 
-        .attr("fill","#FC4C02")
+        .attr("fill","white")
 
         .attr("text-anchor","middle")
 
@@ -1611,7 +1611,7 @@ function createTooltip() {
 
         .style("backdrop-filter","blur(12px)")
 
-        .style("color","#FC4C02")
+        .style("color","white")
 
         .style("font-family","inherit")
 
