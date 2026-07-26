@@ -1088,42 +1088,411 @@ ANIMATION
 
 /*
 ====================================================
-MOBILE
+TOUCH DEVICES
 ====================================================
 */
 
 
-@media(max-width:600px){
+@media (hover:none), (pointer:coarse) {
 
 
-    #lineage-login {
+    #universe svg {
 
-        top:18px;
+        touch-action:none;
 
-        left:18px;
+    }
 
-        max-width:55vw;
 
-        font-size:19px;
+    .family-node {
 
-        text-align:left;
+        stroke-width:2px;
 
     }
 
 
     #relation-input {
 
-        width:300px;
-
-        font-size:16px;
+        min-height:48px;
 
     }
 
 
+}
+
+
+/*
+====================================================
+TABLET
+====================================================
+*/
+
+
+@media (min-width:601px) and (max-width:1024px) {
+
+
+    body::before {
+
+        height:150px;
+
+    }
+
+
+    body::after {
+
+        height:145px;
+
+    }
+
+
+    #lineage-login {
+
+        top:calc(20px + env(safe-area-inset-top));
+
+        left:calc(24px + env(safe-area-inset-left));
+
+        max-width:44vw;
+
+        font-size:18px;
+
+    }
+
+
+    #brand {
+
+        width:92vw;
+
+    }
+
 
     #brand h1 {
 
+        font-size:clamp(38px,7vw,64px);
+
+        letter-spacing:.14em;
+
+    }
+
+
+    #brand h2 {
+
+        font-size:clamp(17px,2.5vw,25px);
+
+    }
+
+
+    #relation-input {
+
+        width:min(440px,78vw);
+
+        padding:16px 28px;
+
+        font-size:18px;
+
+    }
+
+
+    body.universe-active #brand {
+
+        top:calc(26px + env(safe-area-inset-top));
+
+    }
+
+
+    body.universe-active #brand h1 {
+
+        font-size:clamp(28px,4vw,42px);
+
+    }
+
+
+    body.universe-active #brand h2 {
+
+        font-size:clamp(16px,2vw,20px);
+
+    }
+
+
+    body.universe-active #search-panel {
+
+        bottom:calc(24px + env(safe-area-inset-bottom));
+
+        transform:translateX(-50%) scale(.9);
+
+    }
+
+
+    body.universe-active #relation-input {
+
+        width:min(620px,calc(100vw - 56px));
+
+        max-width:calc(100vw - 56px);
+
+    }
+
+
+    #tooltip {
+
+        max-width:min(420px,calc(100vw - 40px));
+
+    }
+
+
+}
+
+
+/*
+====================================================
+PHONE
+====================================================
+*/
+
+
+@media (max-width:600px) {
+
+
+    body::before {
+
+        height:125px;
+
+    }
+
+
+    body::after {
+
+        height:130px;
+
+    }
+
+
+    #lineage-login {
+
+        top:calc(14px + env(safe-area-inset-top));
+
+        left:calc(16px + env(safe-area-inset-left));
+
+        max-width:calc(100vw - 32px);
+
+        font-size:15px;
+
+        text-align:left;
+
+    }
+
+
+    #brand {
+
+        width:94vw;
+
+    }
+
+
+    #brand h1 {
+
+        font-size:clamp(26px,9vw,42px);
+
+        letter-spacing:.09em;
+
+    }
+
+
+    #brand h2 {
+
+        margin-top:18px;
+
+        font-size:clamp(15px,4.5vw,20px);
+
+        letter-spacing:.1em;
+
+    }
+
+
+    #search-panel {
+
+        top:68%;
+
+        width:100%;
+
+    }
+
+
+    #relation-input {
+
+        box-sizing:border-box;
+
+        width:calc(100vw - 32px);
+
+        max-width:calc(100vw - 32px);
+
+        padding:14px 18px;
+
+        font-size:16px;
+
+        letter-spacing:.06em;
+
+    }
+
+
+    body.universe-active #brand {
+
+        top:calc(58px + env(safe-area-inset-top));
+
+        transform:translateX(-50%) scale(.86);
+
+    }
+
+
+    body.universe-active #brand h1 {
+
+        font-size:clamp(20px,6vw,28px);
+
         letter-spacing:.12em;
+
+    }
+
+
+    body.universe-active #brand h2 {
+
+        margin-top:5px;
+
+        font-size:13px;
+
+        letter-spacing:.1em;
+
+    }
+
+
+    body.universe-active #search-panel {
+
+        bottom:calc(14px + env(safe-area-inset-bottom));
+
+        transform:translateX(-50%) scale(1);
+
+    }
+
+
+    body.universe-active #relation-input {
+
+        width:calc(100vw - 24px);
+
+        max-width:calc(100vw - 24px);
+
+        font-size:15px;
+
+    }
+
+
+    #tooltip {
+
+        position:fixed;
+
+        top:auto !important;
+
+        right:12px;
+
+        bottom:calc(88px + env(safe-area-inset-bottom));
+
+        left:12px !important;
+
+        box-sizing:border-box;
+
+        width:auto;
+
+        max-width:none;
+
+        max-height:35vh;
+
+        overflow-y:auto;
+
+        padding:12px 14px;
+
+        font-size:12px;
+
+        letter-spacing:.04em;
+
+    }
+
+
+}
+
+
+/*
+====================================================
+PHONE — LANDSCAPE
+====================================================
+*/
+
+
+@media (max-width:900px) and (max-height:500px) {
+
+
+    body::before,
+    body::after {
+
+        height:82px;
+
+    }
+
+
+    #lineage-login {
+
+        top:calc(8px + env(safe-area-inset-top));
+
+        font-size:12px;
+
+    }
+
+
+    #brand h1 {
+
+        font-size:clamp(24px,6vw,34px);
+
+    }
+
+
+    #brand h2 {
+
+        margin-top:8px;
+
+        font-size:14px;
+
+    }
+
+
+    body.universe-active #brand {
+
+        top:calc(10px + env(safe-area-inset-top));
+
+    }
+
+
+    body.universe-active #brand h2 {
+
+        display:none;
+
+    }
+
+
+    body.universe-active #search-panel {
+
+        bottom:calc(8px + env(safe-area-inset-bottom));
+
+    }
+
+
+    #relation-input {
+
+        min-height:42px;
+
+        padding:10px 16px;
+
+    }
+
+
+    #tooltip {
+
+        bottom:calc(68px + env(safe-area-inset-bottom));
+
+        max-height:42vh;
 
     }
 

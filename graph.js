@@ -263,6 +263,26 @@ function resizeUniverse() {
 
     }
 
+    if (focusedPerson) {
+
+        applyImmediateFamilyLayout(focusedPerson);
+
+        const selected =
+
+            graph.nodes.find(
+
+                node =>
+                    String(node.id)
+                    ===
+                    String(focusedPerson)
+
+            );
+
+        if (selected)
+            flyCameraTo(selected);
+
+    }
+
 }
 
 //
@@ -482,7 +502,7 @@ function buildNodes(nodes) {
 
         .attr("class", "family-node")
 
-        .attr("r", STAR.radius)
+        .attr("r", baseNodeRadius())
 
         .attr("fill", "white")
 
@@ -1230,16 +1250,30 @@ function calculateSeparation(startId, keep) {
 
 function labelSizeForSeparation(separation) {
 
+    const sizeScale =
+
+        width <= 600
+        ?
+        0.82
+        :
+        (
+            width <= 1024
+            ?
+            0.92
+            :
+            1
+        );
+
     if (separation === 0)
-        return 16;
+        return 16 * sizeScale;
 
     if (separation === 1)
-        return 13;
+        return 13 * sizeScale;
 
     if (separation === 2)
-        return 11;
+        return 11 * sizeScale;
 
-    return 9;
+    return 9 * sizeScale;
 
 }
 
@@ -1254,7 +1288,7 @@ function nodeSizeForSeparation(separation, id) {
     if (separation === 2)
         return 4;
 
-    return STAR.radius;
+    return baseNodeRadius();
 
 }
 
@@ -1284,6 +1318,8 @@ function applyImmediateFamilyLayout(id) {
 
     if (!selected)
         return;
+
+    const layout = familyLayoutForViewport();
 
     const parents = [];
     const siblings = [];
@@ -1381,7 +1417,9 @@ function applyImmediateFamilyLayout(id) {
 
         selected.x,
 
-        selected.y + FAMILY_LAYOUT.parentY
+        selected.y + layout.parentY,
+
+        layout.spacing
 
     );
 
@@ -1395,7 +1433,7 @@ function applyImmediateFamilyLayout(id) {
                 x:
                     selected.x
                     +
-                    FAMILY_LAYOUT.spouseX
+                    layout.spouseX
                     *
                     (index + 1),
 
@@ -1416,7 +1454,7 @@ function applyImmediateFamilyLayout(id) {
                 x:
                     selected.x
                     -
-                    FAMILY_LAYOUT.spouseX
+                    layout.spouseX
                     *
                     (index + 1),
 
@@ -1433,7 +1471,9 @@ function applyImmediateFamilyLayout(id) {
 
         selected.x,
 
-        selected.y + FAMILY_LAYOUT.childY
+        selected.y + layout.childY,
+
+        layout.spacing
 
     );
 
@@ -1560,7 +1600,7 @@ function applyImmediateFamilyLayout(id) {
 
 }
 
-function arrangeFamilyRow(ids, centerX, y) {
+function arrangeFamilyRow(ids, centerX, y, rowSpacing) {
 
     const uniqueIds = [...new Set(ids)];
 
@@ -1570,7 +1610,7 @@ function arrangeFamilyRow(ids, centerX, y) {
 
         ?
 
-        FAMILY_LAYOUT.spacing
+        rowSpacing
 
         :
 
@@ -1631,19 +1671,101 @@ function focusedLabelRadius(node) {
             ""
         );
 
+    const characterWidth =
+
+        width <= 600
+        ?
+        3.2
+        :
+        (
+            width <= 1024
+            ?
+            3.8
+            :
+            4.5
+        );
+
+    const maximumRadius =
+
+        width <= 600
+        ?
+        120
+        :
+        (
+            width <= 1024
+            ?
+            165
+            :
+            220
+        );
+
     return Math.max(
 
         42,
 
         Math.min(
 
-            220,
+            maximumRadius,
 
-            name.length * 4.5
+            name.length * characterWidth
 
         )
 
     );
+
+}
+
+function familyLayoutForViewport() {
+
+    if (width <= 600) {
+
+        return {
+
+            zoom: 1.25,
+
+            parentY: -105,
+
+            spouseX: 125,
+
+            childY: 120,
+
+            spacing: 105
+
+        };
+
+    }
+
+    if (width <= 1024) {
+
+        return {
+
+            zoom: 1.42,
+
+            parentY: -135,
+
+            spouseX: 170,
+
+            childY: 155,
+
+            spacing: 145
+
+        };
+
+    }
+
+    return FAMILY_LAYOUT;
+
+}
+
+function baseNodeRadius() {
+
+    if (width <= 600)
+        return 3.4;
+
+    if (width <= 1024)
+        return 2.8;
+
+    return STAR.radius;
 
 }
 
@@ -1715,7 +1837,19 @@ function nodeHover(event,d){
 
         .duration(150)
 
-        .attr("r",6)
+        .attr(
+
+            "r",
+
+            String(focusedPerson)
+            ===
+            String(d.id)
+            ?
+            8
+            :
+            6
+
+        )
 
         .attr("opacity",1);
 
@@ -2133,7 +2267,7 @@ function nodeOut(){
 
             "r",
 
-            STAR.radius
+            baseNodeRadius()
 
         )
 
@@ -2160,6 +2294,15 @@ function nodeOut(){
 function nodeClick(event,d){
 
     focusPerson(d);
+
+    if (
+        window.matchMedia(
+
+            "(hover: none), (pointer: coarse)"
+
+        ).matches
+    )
+        nodeHover.call(this,event,d);
 
 }
 
@@ -2250,7 +2393,7 @@ function cameraTransform(){
 
         ?
 
-        FAMILY_LAYOUT.zoom
+        familyLayoutForViewport().zoom
 
         :
 
@@ -2400,7 +2543,7 @@ function resetUniverse(){
 
         .duration(500)
 
-        .attr("r",STAR.radius)
+        .attr("r",baseNodeRadius())
 
         .attr("opacity",STAR.opacity);
 
