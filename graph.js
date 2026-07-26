@@ -52,6 +52,20 @@ const CAMERA = {
 
 };
 
+const FAMILY_LAYOUT = {
+
+    zoom: 1.65,
+
+    parentY: -115,
+
+    spouseX: 115,
+
+    childY: 135,
+
+    spacing: 95
+
+};
+
 
 const App = {
 
@@ -101,6 +115,8 @@ let nodeLayer;
 let labelLayer;
 
 let simulation;
+
+let familyLayoutTargets = new Map();
 
 let zoomBehavior;
 
@@ -858,6 +874,26 @@ function focusPerson(person) {
 
     focusedPerson = person.id;
 
+    const input =
+
+        document.getElementById(
+
+            "relation-input"
+
+        );
+
+    if (input) {
+
+        input.value =
+
+            person.name
+            ||
+            person.display_name
+            ||
+            "";
+
+    }
+
     userView = d3.zoomIdentity;
 
     svg.call(
@@ -912,6 +948,8 @@ async function illuminateFamily(id) {
 
         );
 
+    applyImmediateFamilyLayout(id);
+
     nodeSelection
 
         .transition()
@@ -924,11 +962,12 @@ async function illuminateFamily(id) {
 
             d =>
 
-                keep.has(String(d.id))
+                nodeSizeForSeparation(
 
-                ? 4.5
+                    separation.get(String(d.id))
 
-                : STAR.radius
+                )
+
 
         )
 
@@ -1134,6 +1173,21 @@ function labelSizeForSeparation(separation) {
 
 }
 
+function nodeSizeForSeparation(separation) {
+
+    if (separation === 0)
+        return 8;
+
+    if (separation === 1)
+        return 6;
+
+    if (separation === 2)
+        return 4;
+
+    return STAR.radius;
+
+}
+
 function shouldDisplayLabel(separation) {
 
     return (
@@ -1143,6 +1197,307 @@ function shouldDisplayLabel(separation) {
         separation <= 3
 
     );
+
+}
+
+function applyImmediateFamilyLayout(id) {
+
+    const selectedId = String(id);
+
+    const selected =
+
+        graph.nodes.find(
+
+            node => String(node.id) === selectedId
+
+        );
+
+    if (!selected)
+        return;
+
+    const parents = [];
+    const spouses = [];
+    const children = [];
+
+    graph.links.forEach(link => {
+
+        const source = String(
+
+            link.source.id
+            ??
+            link.source
+
+        );
+
+        const target = String(
+
+            link.target.id
+            ??
+            link.target
+
+        );
+
+        if (link.type === "spouse") {
+
+            if (source === selectedId)
+                spouses.push(target);
+
+            else if (target === selectedId)
+                spouses.push(source);
+
+            return;
+
+        }
+
+        if (link.type !== "parent")
+            return;
+
+        if (target === selectedId)
+            parents.push(source);
+
+        if (source === selectedId)
+            children.push(target);
+
+    });
+
+    familyLayoutTargets = new Map([
+
+        [
+            selectedId,
+            {
+                x: selected.x,
+                y: selected.y
+            }
+        ]
+
+    ]);
+
+    arrangeFamilyRow(
+
+        parents,
+
+        selected.x,
+
+        selected.y + FAMILY_LAYOUT.parentY
+
+    );
+
+    spouses.forEach((spouseId, index) => {
+
+        const direction =
+
+            index % 2 === 0
+            ?
+            1
+            :
+            -1;
+
+        const step =
+
+            Math.floor(index / 2) + 1;
+
+        familyLayoutTargets.set(
+
+            spouseId,
+
+            {
+                x:
+                    selected.x
+                    +
+                    direction
+                    *
+                    FAMILY_LAYOUT.spouseX
+                    *
+                    step,
+
+                y: selected.y
+            }
+
+        );
+
+    });
+
+    arrangeFamilyRow(
+
+        children,
+
+        selected.x,
+
+        selected.y + FAMILY_LAYOUT.childY
+
+    );
+
+    simulation
+
+        .force(
+
+            "family-x",
+
+            d3.forceX(
+
+                node => {
+
+                    const target =
+
+                        familyLayoutTargets.get(
+
+                            String(node.id)
+
+                        );
+
+                    return target
+                        ?
+                        target.x
+                        :
+                        node.x;
+
+                }
+
+            )
+
+            .strength(
+
+                node =>
+
+                    familyLayoutTargets.has(
+
+                        String(node.id)
+
+                    )
+
+                    ?
+                    .55
+                    :
+                    0
+
+            )
+
+        )
+
+        .force(
+
+            "family-y",
+
+            d3.forceY(
+
+                node => {
+
+                    const target =
+
+                        familyLayoutTargets.get(
+
+                            String(node.id)
+
+                        );
+
+                    return target
+                        ?
+                        target.y
+                        :
+                        node.y;
+
+                }
+
+            )
+
+            .strength(
+
+                node =>
+
+                    familyLayoutTargets.has(
+
+                        String(node.id)
+
+                    )
+
+                    ?
+                    .55
+                    :
+                    0
+
+            )
+
+        )
+
+        .force(
+
+            "collision",
+
+            d3.forceCollide()
+
+                .radius(
+
+                    node =>
+
+                        familyLayoutTargets.has(
+
+                            String(node.id)
+
+                        )
+
+                        ?
+                        28
+                        :
+                        8
+
+                )
+
+        )
+
+        .alpha(.7)
+
+        .restart();
+
+}
+
+function arrangeFamilyRow(ids, centerX, y) {
+
+    const uniqueIds = [...new Set(ids)];
+
+    const spacing =
+
+        uniqueIds.length > 1
+
+        ?
+
+        Math.min(
+
+            FAMILY_LAYOUT.spacing,
+
+            520 / (uniqueIds.length - 1)
+
+        )
+
+        :
+
+        0;
+
+    const startX =
+
+        centerX
+        -
+        (
+            spacing
+            *
+            (uniqueIds.length - 1)
+            /
+            2
+        );
+
+    uniqueIds.forEach((personId, index) => {
+
+        familyLayoutTargets.set(
+
+            personId,
+
+            {
+                x: startX + spacing * index,
+                y
+            }
+
+        );
+
+    });
 
 }
 
@@ -1358,7 +1713,7 @@ function cameraTransform(){
 
         ?
 
-        1.45
+        FAMILY_LAYOUT.zoom
 
         :
 
@@ -1465,6 +1820,28 @@ document.addEventListener(
 function resetUniverse(){
 
     focusedPerson=null;
+
+    familyLayoutTargets.clear();
+
+    simulation
+
+        .force("family-x", null)
+
+        .force("family-y", null)
+
+        .force(
+
+            "collision",
+
+            d3.forceCollide()
+
+                .radius(8)
+
+        )
+
+        .alpha(.3)
+
+        .restart();
 
     userView=d3.zoomIdentity;
 
