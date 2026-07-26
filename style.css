@@ -733,9 +733,20 @@ LINEAGE LOGIN
 
 body:not(.universe-active) #relation-input {
 
+    caret-color:transparent;
+
     animation:
 
         inputPulse 2.8s ease-in-out infinite;
+
+}
+
+
+body:not(.universe-active) #relation-input::placeholder {
+
+    animation:
+
+        placeholderPulse 2.8s ease-in-out infinite;
 
 }
 
@@ -948,6 +959,8 @@ ANIMATION
     0%,
     100% {
 
+        color:rgba(255,255,255,.72);
+
         border-color:rgba(255,255,255,.28);
 
         box-shadow:
@@ -960,12 +973,35 @@ ANIMATION
 
     50% {
 
+        color:white;
+
         border-color:rgba(255,255,255,.72);
 
         box-shadow:
 
             0 0 42px
             rgba(255,255,255,.18);
+
+    }
+
+
+}
+
+
+@keyframes placeholderPulse {
+
+
+    0%,
+    100% {
+
+        color:rgba(255,255,255,.55);
+
+    }
+
+
+    50% {
+
+        color:white;
 
     }
 

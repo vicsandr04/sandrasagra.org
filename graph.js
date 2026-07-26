@@ -865,7 +865,7 @@ async function illuminateFamily(id) {
 
             family.nodes.map(
 
-                n => n.id
+                n => String(n.id)
 
             )
 
@@ -893,7 +893,7 @@ async function illuminateFamily(id) {
 
             d =>
 
-                keep.has(d.id)
+                keep.has(String(d.id))
 
                 ? 4.5
 
@@ -907,7 +907,7 @@ async function illuminateFamily(id) {
 
             d =>
 
-                keep.has(d.id)
+                keep.has(String(d.id))
 
                 ? 1
 
@@ -927,11 +927,11 @@ async function illuminateFamily(id) {
 
             d =>
 
-                keep.has(d.source.id)
+                keep.has(String(d.source.id))
 
                 &&
 
-                keep.has(d.target.id)
+                keep.has(String(d.target.id))
 
                 ? .35
 
@@ -945,17 +945,17 @@ async function illuminateFamily(id) {
 
         .duration(600)
 
-        .attr(
+        .style(
 
             "font-size",
 
             d =>
 
-                labelSizeForSeparation(
+                `${labelSizeForSeparation(
 
-                    separation.get(d.id)
+                    separation.get(String(d.id))
 
-                )
+                )}px`
 
         )
 
@@ -965,7 +965,11 @@ async function illuminateFamily(id) {
 
             d =>
 
-                keep.has(d.id)
+                shouldDisplayLabel(
+
+                    separation.get(String(d.id))
+
+                )
 
                 ? 1
 
@@ -977,9 +981,11 @@ async function illuminateFamily(id) {
 
 function calculateSeparation(startId, keep) {
 
+    const normalizedStartId = String(startId);
+
     const distance = new Map([
 
-        [startId, 0]
+        [normalizedStartId, 0]
 
     ]);
 
@@ -989,15 +995,23 @@ function calculateSeparation(startId, keep) {
 
         const source =
 
-            link.source.id
-            ??
-            link.source;
+            String(
+
+                link.source.id
+                ??
+                link.source
+
+            );
 
         const target =
 
-            link.target.id
-            ??
-            link.target;
+            String(
+
+                link.target.id
+                ??
+                link.target
+
+            );
 
         if (
             !keep.has(source)
@@ -1017,7 +1031,7 @@ function calculateSeparation(startId, keep) {
 
     });
 
-    const queue = [startId];
+    const queue = [normalizedStartId];
 
     while (queue.length) {
 
@@ -1062,6 +1076,18 @@ function labelSizeForSeparation(separation) {
         return 11;
 
     return 9;
+
+}
+
+function shouldDisplayLabel(separation) {
+
+    return (
+
+        Number.isFinite(separation)
+        &&
+        separation <= 3
+
+    );
 
 }
 
@@ -1403,7 +1429,7 @@ function resetUniverse(){
 
         .transition()
 
-        .attr("font-size",12)
+        .style("font-size","12px")
 
         .style("opacity",0);
 
