@@ -455,14 +455,7 @@ RELATE YOURSELF FIELD
 
 
 
-    background:
-
-        rgba(
-            0,
-            20,
-            137,
-            .35
-        );
+    background:#001489;
 
 
 
@@ -562,7 +555,7 @@ RELATE YOURSELF FIELD
     box-shadow:
 
         0 0 0 1000px
-        rgba(0,20,137,.35)
+        #001489
         inset;
 
 }
@@ -790,7 +783,7 @@ body:not(.universe-active) #relation-input {
 
     animation:
 
-        inputPulse 2.8s ease-in-out infinite;
+        inputPulse 4.9s ease-in-out infinite;
 
     animation-delay:4s;
 
@@ -801,7 +794,7 @@ body:not(.universe-active) #relation-input {
 
     animation:
 
-        placeholderPulse 2.8s ease-in-out infinite;
+        placeholderPulse 4.9s ease-in-out infinite;
 
     animation-delay:4s;
 
@@ -1041,14 +1034,7 @@ ANIMATION
 
         color:rgba(255,255,255,.72);
 
-        background:
-
-            rgba(
-                0,
-                6,
-                72,
-                .72
-            );
+        background:#001489;
 
         border-color:rgba(255,255,255,.28);
 
@@ -1064,14 +1050,7 @@ ANIMATION
 
         color:white;
 
-        background:
-
-            rgba(
-                58,
-                96,
-                255,
-                .68
-            );
+        background:#3A60FF;
 
         border-color:rgba(255,255,255,.72);
 

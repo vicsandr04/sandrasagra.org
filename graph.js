@@ -38,7 +38,7 @@ const SEARCH_PROMPTS = [
 
 ];
 
-const SEARCH_PULSE_DURATION = 2800;
+const SEARCH_PULSE_DURATION = 4900;
 
 
 const STAR = {
