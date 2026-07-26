@@ -54,6 +54,71 @@ body {
 
 }
 
+body::before,
+body::after {
+
+    content:"";
+
+    position:fixed;
+
+    left:0;
+
+    width:100%;
+
+    z-index:5;
+
+    pointer-events:none;
+
+    opacity:0;
+
+    transition:opacity 2s ease;
+
+}
+
+
+body::before {
+
+    top:0;
+
+    height:180px;
+
+    background:
+
+        linear-gradient(
+            to bottom,
+            rgba(0,0,0,1) 0%,
+            rgba(0,0,0,.96) 48%,
+            rgba(0,0,0,0) 100%
+        );
+
+}
+
+
+body::after {
+
+    bottom:0;
+
+    height:150px;
+
+    background:
+
+        linear-gradient(
+            to top,
+            rgba(0,0,0,1) 0%,
+            rgba(0,0,0,.94) 52%,
+            rgba(0,0,0,0) 100%
+        );
+
+}
+
+
+body.universe-active::before,
+body.universe-active::after {
+
+    opacity:1;
+
+}
+
 
 
 /*
@@ -287,6 +352,12 @@ INTRO BRAND
     animation-delay:
 
         2s;
+
+    transition:
+
+        margin-top 2s ease,
+        font-size 2s ease,
+        letter-spacing 2s ease;
 
 }
 
@@ -549,7 +620,13 @@ body.universe-active #brand h2 {
     margin-top:8px;
 
 
-    font-size:14px;
+    font-size:
+
+        clamp(
+            18px,
+            1.6vw,
+            24px
+        );
 
 
     letter-spacing:.18em;

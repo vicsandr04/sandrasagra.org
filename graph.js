@@ -871,6 +871,16 @@ async function illuminateFamily(id) {
 
         );
 
+    const separation =
+
+        calculateSeparation(
+
+            id,
+
+            keep
+
+        );
+
     nodeSelection
 
         .transition()
@@ -935,6 +945,20 @@ async function illuminateFamily(id) {
 
         .duration(600)
 
+        .attr(
+
+            "font-size",
+
+            d =>
+
+                labelSizeForSeparation(
+
+                    separation.get(d.id)
+
+                )
+
+        )
+
         .style(
 
             "opacity",
@@ -948,6 +972,96 @@ async function illuminateFamily(id) {
                 : 0
 
         );
+
+}
+
+function calculateSeparation(startId, keep) {
+
+    const distance = new Map([
+
+        [startId, 0]
+
+    ]);
+
+    const neighbours = new Map();
+
+    graph.links.forEach(link => {
+
+        const source =
+
+            link.source.id
+            ??
+            link.source;
+
+        const target =
+
+            link.target.id
+            ??
+            link.target;
+
+        if (
+            !keep.has(source)
+            ||
+            !keep.has(target)
+        )
+            return;
+
+        if (!neighbours.has(source))
+            neighbours.set(source, []);
+
+        if (!neighbours.has(target))
+            neighbours.set(target, []);
+
+        neighbours.get(source).push(target);
+        neighbours.get(target).push(source);
+
+    });
+
+    const queue = [startId];
+
+    while (queue.length) {
+
+        const current = queue.shift();
+
+        for (
+            const next
+            of
+            neighbours.get(current) || []
+        ) {
+
+            if (distance.has(next))
+                continue;
+
+            distance.set(
+
+                next,
+
+                distance.get(current) + 1
+
+            );
+
+            queue.push(next);
+
+        }
+
+    }
+
+    return distance;
+
+}
+
+function labelSizeForSeparation(separation) {
+
+    if (separation === 0)
+        return 16;
+
+    if (separation === 1)
+        return 13;
+
+    if (separation === 2)
+        return 11;
+
+    return 9;
 
 }
 
@@ -1288,6 +1402,8 @@ function resetUniverse(){
     labelSelection
 
         .transition()
+
+        .attr("font-size",12)
 
         .style("opacity",0);
 
