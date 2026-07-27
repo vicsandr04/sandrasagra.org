@@ -4035,7 +4035,45 @@ function traceRelationshipToFocus(person) {
         node =>
             pathPeople.has(String(node.id))
 
-    );
+    )
+
+        .text(
+
+            node =>
+
+                pathPeople.has(String(node.id))
+
+                ?
+
+                (
+                    node.name
+                    ||
+                    node.display_name
+                )
+
+                :
+
+                (
+                    isFocusedCoupleMember(node.id)
+
+                    ?
+
+                    (
+                        node.name
+                        ||
+                        node.display_name
+                    )
+
+                    :
+
+                    (
+                        node.display_name
+                        ||
+                        node.name
+                    )
+                )
+
+        );
 
     linkSelection.classed(
 
@@ -4087,10 +4125,36 @@ function clearRelationshipTrace() {
         );
 
     if (labelSelection)
-        labelSelection.classed(
-            "relationship-path-label",
-            false
-        );
+        labelSelection
+
+            .classed(
+                "relationship-path-label",
+                false
+            )
+
+            .text(
+
+                node =>
+
+                    isFocusedCoupleMember(node.id)
+
+                    ?
+
+                    (
+                        node.name
+                        ||
+                        node.display_name
+                    )
+
+                    :
+
+                    (
+                        node.display_name
+                        ||
+                        node.name
+                    )
+
+            );
 
     if (linkSelection)
         linkSelection.classed(
