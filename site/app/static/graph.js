@@ -1934,99 +1934,88 @@ function arrangeFocusGeneration(
 
 ) {
 
-    const left = [];
-    const right = [];
+    const selectedId = String(selected.id);
 
-    people.forEach(person => {
+    const pathByPerson =
 
-        const signature =
-            person.relationships.join(">");
+        new Map(
 
-        if (signature === "parent>child")
-            left.push(person.id);
-        else
-            right.push(person.id);
+            people.map(person => [
 
-    });
+                String(person.id),
 
-    arrangeChartSide(
+                person.relationships.join(">")
 
-        left,
-
-        selected,
-
-        -1,
-
-        layout.chartColumnGap
-
-    );
-
-    arrangeChartSide(
-
-        right,
-
-        selected,
-
-        1,
-
-        layout.chartColumnGap
-
-    );
-
-}
-
-function arrangeChartSide(
-
-    ids,
-
-    selected,
-
-    direction,
-
-    minimumGap
-
-) {
-
-    let distance = 0;
-
-    ids.forEach(personId => {
-
-        const person =
-
-            graph.nodes.find(
-
-                node =>
-                    String(node.id)
-                    ===
-                    String(personId)
-
-            );
-
-        distance += Math.max(
-
-            minimumGap,
-
-            focusedLabelRadius(person)
+            ])
 
         );
 
-        familyLayoutTargets.set(
+    const units = buildChartUnits([
 
-            String(personId),
+        selectedId,
 
-            {
-                x:
-                    selected.x
-                    +
-                    distance
-                    *
-                    direction,
-                y: selected.y
-            }
+        ...people.map(person => person.id)
 
+    ]);
+
+    const focusUnit =
+
+        units.find(unit =>
+            unit.includes(selectedId)
         );
 
-    });
+    if (focusUnit) {
+
+        focusUnit.splice(
+            focusUnit.indexOf(selectedId),
+            1
+        );
+
+        focusUnit.unshift(selectedId);
+
+    }
+
+    const siblingUnits = units.filter(unit =>
+
+        unit !== focusUnit
+        &&
+        unit.some(personId =>
+
+            (
+                pathByPerson.get(personId)
+                ||
+                ""
+            ).startsWith("parent>child")
+
+        )
+
+    );
+
+    const otherUnits = units.filter(unit =>
+
+        unit !== focusUnit
+        &&
+        !siblingUnits.includes(unit)
+
+    );
+
+    arrangeChartUnits(
+
+        [
+            ...siblingUnits,
+            ...(focusUnit ? [focusUnit] : []),
+            ...otherUnits
+        ],
+
+        selected.x,
+
+        selected.y,
+
+        layout.chartColumnGap,
+
+        selectedId
+
+    );
 
 }
 
@@ -2045,58 +2034,262 @@ function arrangeChartRow(
     if (!ids.length)
         return;
 
-    const people = ids.map(personId =>
+    arrangeChartUnits(
 
-        graph.nodes.find(
+        buildChartUnits(ids),
 
-            node =>
-                String(node.id)
-                ===
-                String(personId)
+        centerX,
 
-        )
+        y,
+
+        minimumGap
 
     );
 
-    const gaps = [];
-    let totalWidth = 0;
+}
 
-    for (
-        let index = 1;
-        index < people.length;
-        index += 1
-    ) {
+function buildChartUnits(ids) {
 
-        const gap = Math.max(
+    const orderedIds =
 
-            minimumGap,
+        [...new Set(
 
-            focusedLabelRadius(people[index - 1])
-            +
-            focusedLabelRadius(people[index])
+            ids.map(id => String(id))
 
-        );
+        )];
 
-        gaps.push(gap);
-        totalWidth += gap;
+    const available = new Set(orderedIds);
+    const assigned = new Set();
+    const units = [];
 
-    }
+    orderedIds.forEach(personId => {
 
-    let x = centerX - totalWidth / 2;
+        if (assigned.has(personId))
+            return;
 
-    people.forEach((person, index) => {
+        const unit = [personId];
 
-        familyLayoutTargets.set(
+        assigned.add(personId);
 
-            String(person.id),
+        graph.links.forEach(link => {
 
-            {x, y}
+            if (link.type !== "spouse")
+                return;
 
-        );
+            const source = String(
+                link.source.id
+                ??
+                link.source
+            );
 
-        x += gaps[index] || 0;
+            const target = String(
+                link.target.id
+                ??
+                link.target
+            );
+
+            let spouseId = null;
+
+            if (source === personId)
+                spouseId = target;
+            else if (target === personId)
+                spouseId = source;
+
+            if (
+                !spouseId
+                ||
+                !available.has(spouseId)
+                ||
+                assigned.has(spouseId)
+            )
+                return;
+
+            unit.push(spouseId);
+            assigned.add(spouseId);
+
+        });
+
+        units.push(unit);
 
     });
+
+    return units;
+
+}
+
+function arrangeChartUnits(
+
+    units,
+
+    centerX,
+
+    y,
+
+    minimumUnitGap,
+
+    anchorId = null
+
+) {
+
+    if (!units.length)
+        return;
+
+    const couplePadding =
+
+        width <= 600
+        ?
+        16
+        :
+        24;
+
+    const layouts = units
+
+        .map(unit => {
+
+            const people = unit
+
+                .map(personId =>
+
+                    graph.nodes.find(node =>
+
+                        String(node.id)
+                        ===
+                        String(personId)
+
+                    )
+
+                )
+
+                .filter(Boolean);
+
+            if (!people.length)
+                return null;
+
+            const centers = [0];
+
+            for (
+                let index = 1;
+                index < people.length;
+                index += 1
+            ) {
+
+                centers[index] =
+
+                    centers[index - 1]
+                    +
+                    focusedLabelRadius(
+                        people[index - 1]
+                    )
+                    +
+                    focusedLabelRadius(
+                        people[index]
+                    )
+                    +
+                    couplePadding;
+
+            }
+
+            const left =
+
+                centers[0]
+                -
+                focusedLabelRadius(people[0]);
+
+            const right =
+
+                centers[centers.length - 1]
+                +
+                focusedLabelRadius(
+                    people[people.length - 1]
+                );
+
+            return {
+                people,
+                centers,
+                left,
+                width: right - left
+            };
+
+        })
+
+        .filter(Boolean);
+
+    const totalWidth =
+
+        layouts.reduce(
+
+            (sum, layout) =>
+                sum + layout.width,
+
+            0
+
+        )
+        +
+        minimumUnitGap
+        *
+        Math.max(0, layouts.length - 1);
+
+    let edge = centerX - totalWidth / 2;
+    const placedIds = [];
+
+    layouts.forEach(layout => {
+
+        layout.people.forEach(
+
+            (person, index) => {
+
+                const personId = String(person.id);
+
+                familyLayoutTargets.set(
+
+                    personId,
+
+                    {
+                        x:
+                            edge
+                            -
+                            layout.left
+                            +
+                            layout.centers[index],
+                        y
+                    }
+
+                );
+
+                placedIds.push(personId);
+
+            }
+
+        );
+
+        edge +=
+            layout.width
+            +
+            minimumUnitGap;
+
+    });
+
+    if (
+        anchorId
+        &&
+        familyLayoutTargets.has(anchorId)
+    ) {
+
+        const shift =
+
+            centerX
+            -
+            familyLayoutTargets.get(anchorId).x;
+
+        placedIds.forEach(personId => {
+
+            familyLayoutTargets
+                .get(personId)
+                .x += shift;
+
+        });
+
+    }
 
 }
 
