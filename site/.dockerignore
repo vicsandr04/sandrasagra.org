@@ -1,0 +1,10 @@
+.env
+.env.*
+**/__pycache__/
+**/*.pyc
+**/*.backup
+**/*.backup*
+**/*.save
+**/*.universe-v1
+tests/
+
