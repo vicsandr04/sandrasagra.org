@@ -171,9 +171,100 @@ document.addEventListener(
 
         setupSearch();
 
+        setupNavigationGuide();
+
     }
 
 );
+
+function setupNavigationGuide() {
+
+    const toggle =
+        document.getElementById(
+            "navigation-toggle"
+        );
+
+    const guide =
+        document.getElementById(
+            "navigation-guide"
+        );
+
+    const backdrop =
+        document.getElementById(
+            "navigation-backdrop"
+        );
+
+    const close =
+        document.getElementById(
+            "navigation-close"
+        );
+
+    if (
+        !toggle
+        ||
+        !guide
+        ||
+        !backdrop
+        ||
+        !close
+    )
+        return;
+
+    const openGuide = () => {
+
+        hideRelationshipMenu();
+        hideTooltip();
+
+        guide.hidden = false;
+        backdrop.hidden = false;
+
+        toggle.setAttribute(
+            "aria-expanded",
+            "true"
+        );
+
+        document.body.classList.add(
+            "navigation-open"
+        );
+
+        close.focus();
+
+    };
+
+    const closeGuide = () => {
+
+        guide.hidden = true;
+        backdrop.hidden = true;
+
+        toggle.setAttribute(
+            "aria-expanded",
+            "false"
+        );
+
+        document.body.classList.remove(
+            "navigation-open"
+        );
+
+        toggle.focus();
+
+    };
+
+    toggle.addEventListener(
+        "click",
+        openGuide
+    );
+
+    close.addEventListener(
+        "click",
+        closeGuide
+    );
+
+    backdrop.addEventListener(
+        "click",
+        closeGuide
+    );
+
+}
 
 //
 // ------------------------------------------------------------
@@ -3702,6 +3793,28 @@ document.addEventListener(
             event.key==="Escape"
 
         ){
+
+            const navigationGuide =
+
+                document.getElementById(
+                    "navigation-guide"
+                );
+
+            if (
+                navigationGuide
+                &&
+                !navigationGuide.hidden
+            ) {
+
+                document
+                    .getElementById(
+                        "navigation-close"
+                    )
+                    .click();
+
+                return;
+
+            }
 
             if (
                 relationshipMenu
