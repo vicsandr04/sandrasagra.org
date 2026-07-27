@@ -1248,6 +1248,10 @@ async function illuminateFamily(id) {
 
         );
 
+    const labelSeparation =
+
+        coupleLabelSeparations(separation);
+
     const chartPeople =
 
         new Set(
@@ -1372,7 +1376,11 @@ async function illuminateFamily(id) {
 
                 `${labelSizeForSeparation(
 
-                    separation.get(String(d.id))
+                    labelSeparation.get(
+
+                        String(d.id)
+
+                    )
 
                 )}px`
 
@@ -1395,6 +1403,51 @@ async function illuminateFamily(id) {
                 : .32
 
         );
+
+}
+
+function coupleLabelSeparations(separation) {
+
+    const result = new Map(separation);
+
+    graph.links.forEach(link => {
+
+        if (link.type !== "spouse")
+            return;
+
+        const source = String(
+            link.source.id
+            ??
+            link.source
+        );
+
+        const target = String(
+            link.target.id
+            ??
+            link.target
+        );
+
+        const sharedSeparation = Math.min(
+
+            result.get(source)
+            ??
+            Infinity,
+
+            result.get(target)
+            ??
+            Infinity
+
+        );
+
+        if (!Number.isFinite(sharedSeparation))
+            return;
+
+        result.set(source, sharedSeparation);
+        result.set(target, sharedSeparation);
+
+    });
+
+    return result;
 
 }
 
@@ -2138,9 +2191,9 @@ function arrangeChartUnits(
 
         width <= 600
         ?
-        16
+        6
         :
-        24;
+        10;
 
     const layouts = units
 
@@ -2666,33 +2719,33 @@ function focusedLabelRadius(node) {
 
         width <= 600
         ?
-        3.2
+        2.4
         :
         (
             width <= 1024
             ?
-            3.8
+            2.8
             :
-            4.5
+            3.2
         );
 
     const maximumRadius =
 
         width <= 600
         ?
-        120
+        90
         :
         (
             width <= 1024
             ?
-            165
+            120
             :
-            220
+            150
         );
 
     return Math.max(
 
-        30,
+        24,
 
         Math.min(
 
