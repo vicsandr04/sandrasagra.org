@@ -151,8 +151,11 @@ def load_people(conn):
 
 
             "gender":
-                row[4]
-                or 0,
+                (
+                    row[4]
+                    if row[4] is not None
+                    else 2
+                ),
 
 
             "birth":

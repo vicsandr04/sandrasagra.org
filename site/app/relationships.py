@@ -15,6 +15,7 @@ class FamilyGraph:
         self.spouses = defaultdict(set)
 
         self.graph = defaultdict(set)
+        self._ancestor_cache = {}
 
 
         for link in graph["links"]:
@@ -136,106 +137,340 @@ class FamilyGraph:
     # Relationship classifier
     #
 
-    def relationship(self, root, person):
+    def relationship(
+        self,
+        root,
+        person,
+        include_marriage=True
+    ):
+
+        if (
+            root not in self.nodes
+            or
+            person not in self.nodes
+        ):
+            return "unknown relative"
 
         if root == person:
             return "self"
 
-
-
         if person in self.spouses[root]:
-            return "spouse"
-
-
-
-        if person in self.parents[root]:
-            return "parent"
-
-
-
-        if person in self.children[root]:
-            return "child"
-
-
-
-        if person in self.get_siblings(root):
-            return "sibling"
-
-
-
-        if person in self.get_grandparents(root):
-            return "grandparent"
-
-
-
-        if person in self.get_aunts_uncles(root):
-
-            gender = self.nodes.get(
+            return self._gendered(
                 person,
-                {}
-            ).get(
-                "gender"
+                "husband",
+                "wife",
+                "spouse"
             )
 
-            if gender == 1:
-                return "uncle"
-
-            return "aunt"
-
-
-
-        if person in self.get_first_cousins(root):
-            return "cousin"
-
-
-
-        #
-        # fallback ancestor search
-        #
-
-        ancestors = self.parents[root]
-
-        visited=set()
-
-        queue=deque(
-            [
-                (a,1)
-                for a in ancestors
-            ]
+        root_ancestors = self.ancestor_distances(
+            root
         )
 
+        person_ancestors = self.ancestor_distances(
+            person
+        )
+
+        common = (
+            set(root_ancestors)
+            &
+            set(person_ancestors)
+        )
+
+        if not common:
+
+            if not include_marriage:
+                return "relative"
+
+            return self._relationship_by_marriage(
+                root,
+                person
+            )
+
+        ancestor = min(
+            common,
+            key=lambda candidate: (
+                root_ancestors[candidate]
+                +
+                person_ancestors[candidate],
+                max(
+                    root_ancestors[candidate],
+                    person_ancestors[candidate]
+                ),
+                candidate
+            )
+        )
+
+        generations_up = root_ancestors[ancestor]
+        generations_down = person_ancestors[ancestor]
+
+        if generations_down == 0:
+            return self._ancestor_name(
+                person,
+                generations_up
+            )
+
+        if generations_up == 0:
+            return self._descendant_name(
+                person,
+                generations_down
+            )
+
+        if (
+            generations_up == 1
+            and
+            generations_down == 1
+        ):
+            return self._gendered(
+                person,
+                "brother",
+                "sister",
+                "sibling"
+            )
+
+        if generations_down == 1:
+            return self._aunt_uncle_name(
+                person,
+                generations_up
+            )
+
+        if generations_up == 1:
+            return self._niece_nephew_name(
+                person,
+                generations_down
+            )
+
+        cousin_degree = (
+            min(
+                generations_up,
+                generations_down
+            )
+            -
+            1
+        )
+
+        removed = abs(
+            generations_up
+            -
+            generations_down
+        )
+
+        relationship = (
+            f"{self._ordinal(cousin_degree)} cousin"
+        )
+
+        if removed == 1:
+            relationship += " once removed"
+        elif removed == 2:
+            relationship += " twice removed"
+        elif removed > 2:
+            relationship += (
+                f" {removed} times removed"
+            )
+
+        return relationship
+
+
+    def ancestor_distances(self, person):
+
+        if person in self._ancestor_cache:
+            return self._ancestor_cache[person]
+
+        distances = {person: 0}
+        queue = deque([person])
 
         while queue:
 
-            current,depth = queue.popleft()
+            current = queue.popleft()
+            next_distance = distances[current] + 1
+
+            for parent in self.parents[current]:
+
+                if (
+                    parent in distances
+                    and
+                    distances[parent] <= next_distance
+                ):
+                    continue
+
+                distances[parent] = next_distance
+                queue.append(parent)
+
+        self._ancestor_cache[person] = distances
+
+        return distances
 
 
-            if current == person:
+    def _gendered(
+        self,
+        person,
+        male,
+        female,
+        neutral
+    ):
 
-                if depth == 1:
-                    return "parent"
+        gender = self.nodes.get(
+            person,
+            {}
+        ).get("gender")
 
-                if depth == 2:
-                    return "grandparent"
+        if gender == 1:
+            return male
 
-                return "ancestor"
+        if gender == 0:
+            return female
+
+        return neutral
 
 
-            if current not in visited:
+    def _ancestor_name(self, person, depth):
 
-                visited.add(current)
+        if depth == 1:
+            return self._gendered(
+                person,
+                "father",
+                "mother",
+                "parent"
+            )
 
-                for p in self.parents[current]:
+        if depth == 2:
+            return self._gendered(
+                person,
+                "grandfather",
+                "grandmother",
+                "grandparent"
+            )
 
-                    queue.append(
-                        (
-                            p,
-                            depth+1
-                        )
-                    )
+        prefix = "great-" * (depth - 2)
 
+        return self._gendered(
+            person,
+            f"{prefix}grandfather",
+            f"{prefix}grandmother",
+            f"{prefix}grandparent"
+        )
+
+
+    def _descendant_name(self, person, depth):
+
+        if depth == 1:
+            return self._gendered(
+                person,
+                "son",
+                "daughter",
+                "child"
+            )
+
+        if depth == 2:
+            return self._gendered(
+                person,
+                "grandson",
+                "granddaughter",
+                "grandchild"
+            )
+
+        prefix = "great-" * (depth - 2)
+
+        return self._gendered(
+            person,
+            f"{prefix}grandson",
+            f"{prefix}granddaughter",
+            f"{prefix}grandchild"
+        )
+
+
+    def _aunt_uncle_name(self, person, depth):
+
+        if depth == 2:
+            return self._gendered(
+                person,
+                "uncle",
+                "aunt",
+                "parent's sibling"
+            )
+
+        if depth == 3:
+            prefix = "grand"
+        else:
+            prefix = (
+                "great-" * (depth - 3)
+                +
+                "grand"
+            )
+
+        return self._gendered(
+            person,
+            f"{prefix}uncle",
+            f"{prefix}aunt",
+            f"{prefix}parent's sibling"
+        )
+
+
+    def _niece_nephew_name(self, person, depth):
+
+        if depth == 2:
+            return self._gendered(
+                person,
+                "nephew",
+                "niece",
+                "sibling's child"
+            )
+
+        if depth == 3:
+            prefix = "grand"
+        else:
+            prefix = (
+                "great-" * (depth - 3)
+                +
+                "grand"
+            )
+
+        return self._gendered(
+            person,
+            f"{prefix}nephew",
+            f"{prefix}niece",
+            f"{prefix}sibling's descendant"
+        )
+
+
+    def _relationship_by_marriage(
+        self,
+        root,
+        person
+    ):
+
+        for spouse in self.spouses[person]:
+
+            blood_relationship = self.relationship(
+                root,
+                spouse,
+                include_marriage=False
+            )
+
+            if blood_relationship not in (
+                "relative",
+                "relative by marriage",
+                "unknown relative"
+            ):
+                return (
+                    f"{blood_relationship} by marriage"
+                )
 
         return "relative"
+
+
+    @staticmethod
+    def _ordinal(number):
+
+        if 10 <= number % 100 <= 20:
+            suffix = "th"
+        else:
+            suffix = {
+                1: "st",
+                2: "nd",
+                3: "rd"
+            }.get(number % 10, "th")
+
+        return f"{number}{suffix}"
 
 
 

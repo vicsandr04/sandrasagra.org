@@ -189,6 +189,44 @@ def network(person_id):
 
 
 #
+# Specific relationship between two people
+#
+
+@app.route(
+    "/api/relationship/<root_id>/<person_id>"
+)
+def relationship(root_id, person_id):
+
+    graph_data = build_graph()
+
+    family = FamilyGraph(graph_data)
+
+    if (
+        root_id not in family.nodes
+        or
+        person_id not in family.nodes
+    ):
+
+        return jsonify({
+            "error": "Person not found"
+        }), 404
+
+    return jsonify({
+
+        "focus": root_id,
+
+        "person": person_id,
+
+        "relationship":
+            family.relationship(
+                root_id,
+                person_id
+            )
+
+    })
+
+
+#
 # Static files
 #
 

@@ -150,6 +150,10 @@ let labelSelection;
 
 let focusedPerson = null;
 
+let focusedRelationshipLabels = new Map();
+
+let tooltipPersonId = null;
+
 
 //
 // ------------------------------------------------------------
@@ -1145,6 +1149,8 @@ function focusPerson(person) {
 
     clearRelationshipTrace();
 
+    focusedRelationshipLabels.clear();
+
     focusedPerson = person.id;
 
     const input =
@@ -1198,6 +1204,27 @@ async function illuminateFamily(id) {
     );
 
     const family = await response.json();
+
+    if (
+        String(id)
+        !==
+        String(focusedPerson)
+    )
+        return;
+
+    focusedRelationshipLabels =
+
+        new Map(
+
+            family.nodes.map(node => [
+
+                String(node.id),
+
+                node.relationship
+
+            ])
+
+        );
 
     const keep =
 
@@ -2781,6 +2808,8 @@ function nodeHover(event,d){
 
 function showNodeTooltip(event,d) {
 
+    tooltipPersonId = String(d.id);
+
     const relationshipPath =
 
         focusedPerson
@@ -2873,9 +2902,25 @@ function showNodeTooltip(event,d) {
 
     if (relationshipPath) {
 
+        const relationship =
+
+            focusedRelationshipLabels.get(
+
+                String(d.id)
+
+            );
+
         tooltip
 
             .append("div")
+
+            .attr(
+
+                "class",
+
+                "tooltip-relationship"
+
+            )
 
             .style("margin-top","6px")
 
@@ -2883,11 +2928,30 @@ function showNodeTooltip(event,d) {
 
                 "Relationship: "
                 +
-                relationshipLabel(
+                displayRelationshipLabel(
 
-                    relationshipPath.relationships
+                    relationship
+                    ||
+                    relationshipLabel(
+
+                        relationshipPath.relationships
+
+                    )
 
                 )
+
+            );
+
+        if (
+            focusedPerson
+            &&
+            !relationship
+        )
+            loadSpecificRelationship(
+
+                focusedPerson,
+
+                d.id
 
             );
 
@@ -2916,6 +2980,114 @@ function showNodeTooltip(event,d) {
             );
 
     }
+
+}
+
+async function loadSpecificRelationship(
+
+    focusId,
+
+    personId
+
+) {
+
+    const cacheKey =
+
+        `${focusId}::${personId}`;
+
+    if (
+        focusedRelationshipLabels.has(
+
+            String(personId)
+
+        )
+    )
+        return;
+
+    try {
+
+        const response = await fetch(
+
+            "/api/relationship/"
+            +
+            encodeURIComponent(focusId)
+            +
+            "/"
+            +
+            encodeURIComponent(personId)
+
+        );
+
+        if (!response.ok)
+            return;
+
+        const result = await response.json();
+
+        if (
+            String(focusedPerson)
+            !==
+            String(focusId)
+        )
+            return;
+
+        focusedRelationshipLabels.set(
+
+            String(personId),
+
+            result.relationship
+
+        );
+
+        if (
+            tooltipPersonId
+            ===
+            String(personId)
+        )
+            tooltip
+
+            .select(".tooltip-relationship")
+
+            .text(
+
+                "Relationship: "
+                +
+                displayRelationshipLabel(
+
+                    result.relationship
+
+                )
+
+            );
+
+    }
+    catch (error) {
+
+        console.warn(
+
+            "[Universe] Relationship lookup failed",
+
+            cacheKey,
+
+            error
+
+        );
+
+    }
+
+}
+
+function displayRelationshipLabel(value) {
+
+    if (!value)
+        return "Relative";
+
+    return (
+
+        value.charAt(0).toUpperCase()
+        +
+        value.slice(1)
+
+    );
 
 }
 
@@ -3612,6 +3784,8 @@ function hideTooltip() {
 
     if (!tooltip)
         return;
+
+    tooltipPersonId = null;
 
     tooltip.style("opacity",0);
 
