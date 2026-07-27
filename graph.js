@@ -64,7 +64,7 @@ const CAMERA = {
 
 const FAMILY_LAYOUT = {
 
-    zoom: 1.65,
+    zoom: .9,
 
     parentY: -190,
 
@@ -72,7 +72,11 @@ const FAMILY_LAYOUT = {
 
     childY: 220,
 
-    spacing: 220
+    spacing: 220,
+
+    chartRowGap: 190,
+
+    chartColumnGap: 150
 
 };
 
@@ -278,7 +282,7 @@ function resizeUniverse() {
 
     if (focusedPerson) {
 
-        applyImmediateFamilyLayout(focusedPerson);
+        applyThreeDegreeFamilyLayout(focusedPerson);
 
         const selected =
 
@@ -1110,7 +1114,30 @@ async function illuminateFamily(id) {
 
         );
 
-    applyImmediateFamilyLayout(id);
+    const chartPeople =
+
+        new Set(
+
+            [...separation]
+
+                .filter(
+
+                    ([, distance]) =>
+                        distance <= 3
+
+                )
+
+                .map(([personId]) => personId)
+
+        );
+
+    applyThreeDegreeFamilyLayout(
+
+        id,
+
+        chartPeople
+
+    );
 
     nodeSelection
 
@@ -1141,7 +1168,7 @@ async function illuminateFamily(id) {
 
             d =>
 
-                keep.has(String(d.id))
+                chartPeople.has(String(d.id))
 
                 ? 1
 
@@ -1161,11 +1188,11 @@ async function illuminateFamily(id) {
 
             d =>
 
-                keep.has(String(d.source.id))
+                chartPeople.has(String(d.source.id))
 
                 &&
 
-                keep.has(String(d.target.id))
+                chartPeople.has(String(d.target.id))
 
                 ? .35
 
@@ -1223,15 +1250,15 @@ async function illuminateFamily(id) {
 
             d =>
 
-                Number.isFinite(
-
+                (
                     separation.get(String(d.id))
-
+                    <=
+                    3
                 )
 
                 ? 1
 
-                : .48
+                : .32
 
         );
 
@@ -1363,6 +1390,579 @@ function nodeSizeForSeparation(separation, id) {
         return 4;
 
     return baseNodeRadius();
+
+}
+
+function applyThreeDegreeFamilyLayout(
+
+    id,
+
+    allowedIds = null
+
+) {
+
+    const selectedId = String(id);
+
+    const selected =
+
+        graph.nodes.find(
+
+            node => String(node.id) === selectedId
+
+        );
+
+    if (!selected)
+        return;
+
+    const layout = familyLayoutForViewport();
+
+    const chartPaths =
+
+        calculateChartPaths(
+
+            selectedId,
+
+            allowedIds
+
+        );
+
+    const rows = new Map();
+
+    chartPaths.forEach((path, personId) => {
+
+        if (
+            personId === selectedId
+            ||
+            path.distance > 3
+        )
+            return;
+
+        const generation =
+
+            Math.max(
+
+                -3,
+
+                Math.min(3, path.generation)
+
+            );
+
+        if (!rows.has(generation))
+            rows.set(generation, []);
+
+        rows.get(generation).push({
+
+            id: personId,
+
+            ...path
+
+        });
+
+    });
+
+    familyLayoutTargets = new Map([
+
+        [
+            selectedId,
+            {
+                x: selected.x,
+                y: selected.y
+            }
+        ]
+
+    ]);
+
+    rows.forEach((people, generation) => {
+
+        people.sort(chartPersonOrder);
+
+        if (generation === 0) {
+
+            arrangeFocusGeneration(
+
+                people,
+
+                selected,
+
+                layout
+
+            );
+
+            return;
+
+        }
+
+        arrangeChartRow(
+
+            people.map(person => person.id),
+
+            selected.x,
+
+            selected.y
+            +
+            generation
+            *
+            layout.chartRowGap,
+
+            layout.chartColumnGap
+
+        );
+
+    });
+
+    simulation
+
+        .force(
+
+            "family-x",
+
+            d3.forceX(
+
+                node => {
+
+                    const target =
+
+                        familyLayoutTargets.get(
+
+                            String(node.id)
+
+                        );
+
+                    return target
+                        ?
+                        target.x
+                        :
+                        node.x;
+
+                }
+
+            )
+
+            .strength(
+
+                node =>
+
+                    familyLayoutTargets.has(
+
+                        String(node.id)
+
+                    )
+
+                    ?
+                    .82
+                    :
+                    0
+
+            )
+
+        )
+
+        .force(
+
+            "family-y",
+
+            d3.forceY(
+
+                node => {
+
+                    const target =
+
+                        familyLayoutTargets.get(
+
+                            String(node.id)
+
+                        );
+
+                    return target
+                        ?
+                        target.y
+                        :
+                        node.y;
+
+                }
+
+            )
+
+            .strength(
+
+                node =>
+
+                    familyLayoutTargets.has(
+
+                        String(node.id)
+
+                    )
+
+                    ?
+                    .82
+                    :
+                    0
+
+            )
+
+        )
+
+        .force(
+
+            "collision",
+
+            d3.forceCollide()
+
+                .radius(
+
+                    node =>
+
+                        familyLayoutTargets.has(
+
+                            String(node.id)
+
+                        )
+
+                        ?
+                        focusedLabelRadius(node)
+                        :
+                        nodeLabelCollisionRadius(node)
+
+                )
+
+                .iterations(3)
+
+        )
+
+        .alpha(.85)
+
+        .restart();
+
+}
+
+function calculateChartPaths(startId, allowedIds) {
+
+    const neighbours = new Map();
+
+    graph.links.forEach(link => {
+
+        const source = String(
+
+            link.source.id
+            ??
+            link.source
+
+        );
+
+        const target = String(
+
+            link.target.id
+            ??
+            link.target
+
+        );
+
+        if (
+            allowedIds
+            &&
+            (
+                !allowedIds.has(source)
+                ||
+                !allowedIds.has(target)
+            )
+        )
+            return;
+
+        if (!neighbours.has(source))
+            neighbours.set(source, []);
+
+        if (!neighbours.has(target))
+            neighbours.set(target, []);
+
+        if (link.type === "spouse") {
+
+            neighbours.get(source).push({
+                id: target,
+                relationship: "spouse",
+                generation: 0
+            });
+
+            neighbours.get(target).push({
+                id: source,
+                relationship: "spouse",
+                generation: 0
+            });
+
+            return;
+
+        }
+
+        if (link.type !== "parent")
+            return;
+
+        neighbours.get(source).push({
+            id: target,
+            relationship: "child",
+            generation: 1
+        });
+
+        neighbours.get(target).push({
+            id: source,
+            relationship: "parent",
+            generation: -1
+        });
+
+    });
+
+    const paths = new Map([
+
+        [
+            startId,
+            {
+                distance: 0,
+                generation: 0,
+                relationships: []
+            }
+        ]
+
+    ]);
+
+    const queue = [startId];
+
+    while (queue.length) {
+
+        const currentId = queue.shift();
+        const current = paths.get(currentId);
+
+        if (current.distance >= 3)
+            continue;
+
+        for (
+            const neighbour
+            of
+            neighbours.get(currentId) || []
+        ) {
+
+            if (paths.has(neighbour.id))
+                continue;
+
+            paths.set(
+
+                neighbour.id,
+
+                {
+                    distance: current.distance + 1,
+                    generation:
+                        current.generation
+                        +
+                        neighbour.generation,
+                    relationships: [
+                        ...current.relationships,
+                        neighbour.relationship
+                    ]
+                }
+
+            );
+
+            queue.push(neighbour.id);
+
+        }
+
+    }
+
+    return paths;
+
+}
+
+function chartPersonOrder(a, b) {
+
+    const relationshipOrder =
+
+        a.relationships.join(">")
+
+        .localeCompare(
+
+            b.relationships.join(">")
+
+        );
+
+    if (relationshipOrder)
+        return relationshipOrder;
+
+    return personName(a.id)
+
+        .localeCompare(personName(b.id));
+
+}
+
+function arrangeFocusGeneration(
+
+    people,
+
+    selected,
+
+    layout
+
+) {
+
+    const left = [];
+    const right = [];
+
+    people.forEach(person => {
+
+        const signature =
+            person.relationships.join(">");
+
+        if (signature === "parent>child")
+            left.push(person.id);
+        else
+            right.push(person.id);
+
+    });
+
+    arrangeChartSide(
+
+        left,
+
+        selected,
+
+        -1,
+
+        layout.chartColumnGap
+
+    );
+
+    arrangeChartSide(
+
+        right,
+
+        selected,
+
+        1,
+
+        layout.chartColumnGap
+
+    );
+
+}
+
+function arrangeChartSide(
+
+    ids,
+
+    selected,
+
+    direction,
+
+    minimumGap
+
+) {
+
+    let distance = 0;
+
+    ids.forEach(personId => {
+
+        const person =
+
+            graph.nodes.find(
+
+                node =>
+                    String(node.id)
+                    ===
+                    String(personId)
+
+            );
+
+        distance += Math.max(
+
+            minimumGap,
+
+            focusedLabelRadius(person)
+
+        );
+
+        familyLayoutTargets.set(
+
+            String(personId),
+
+            {
+                x:
+                    selected.x
+                    +
+                    distance
+                    *
+                    direction,
+                y: selected.y
+            }
+
+        );
+
+    });
+
+}
+
+function arrangeChartRow(
+
+    ids,
+
+    centerX,
+
+    y,
+
+    minimumGap
+
+) {
+
+    if (!ids.length)
+        return;
+
+    const people = ids.map(personId =>
+
+        graph.nodes.find(
+
+            node =>
+                String(node.id)
+                ===
+                String(personId)
+
+        )
+
+    );
+
+    const gaps = [];
+    let totalWidth = 0;
+
+    for (
+        let index = 1;
+        index < people.length;
+        index += 1
+    ) {
+
+        const gap = Math.max(
+
+            minimumGap,
+
+            focusedLabelRadius(people[index - 1])
+            +
+            focusedLabelRadius(people[index])
+
+        );
+
+        gaps.push(gap);
+        totalWidth += gap;
+
+    }
+
+    let x = centerX - totalWidth / 2;
+
+    people.forEach((person, index) => {
+
+        familyLayoutTargets.set(
+
+            String(person.id),
+
+            {x, y}
+
+        );
+
+        x += gaps[index] || 0;
+
+    });
 
 }
 
@@ -1849,7 +2449,7 @@ function familyLayoutForViewport() {
 
         return {
 
-            zoom: 1.25,
+            zoom: .68,
 
             parentY: -135,
 
@@ -1857,7 +2457,11 @@ function familyLayoutForViewport() {
 
             childY: 150,
 
-            spacing: 145
+            spacing: 145,
+
+            chartRowGap: 125,
+
+            chartColumnGap: 92
 
         };
 
@@ -1867,7 +2471,7 @@ function familyLayoutForViewport() {
 
         return {
 
-            zoom: 1.42,
+            zoom: .78,
 
             parentY: -165,
 
@@ -1875,7 +2479,11 @@ function familyLayoutForViewport() {
 
             childY: 185,
 
-            spacing: 185
+            spacing: 185,
+
+            chartRowGap: 155,
+
+            chartColumnGap: 120
 
         };
 
