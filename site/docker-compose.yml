@@ -1,0 +1,53 @@
+version: "3.3"
+
+services:
+
+  lineage-portal:
+    container_name: lineage-portal
+
+    build: .
+
+    restart: always
+
+    env_file:
+      - .env
+
+    volumes:
+
+      - ./app:/app
+
+      - grampsweb_gramps_db:/grampsdb:ro
+
+
+    environment:
+
+      VIRTUAL_HOST: sandrasagra.org
+
+      VIRTUAL_PORT: 8080
+
+      LETSENCRYPT_HOST: sandrasagra.org
+
+      LETSENCRYPT_EMAIL: victor@sandrasagra.org
+
+
+    networks:
+
+      - proxy-tier
+
+
+
+networks:
+
+  proxy-tier:
+
+    external:
+
+      name: grampsweb_proxy-tier
+
+
+
+volumes:
+
+  grampsweb_gramps_db:
+
+    external: true

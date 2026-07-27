@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+<meta name="theme-color" content="#001489">
+
+<title>SANDRASAGRA.ORG</title>
+
+
+<link rel="stylesheet" href="style.css">
+
+
+<script src="https://d3js.org/d3.v7.min.js"></script>
+
+
+</head>
+
+
+<body>
+
+<a
+    id="lineage-login"
+    href="https://lineage.sandrasagra.org"
+    target="_blank"
+    rel="noopener noreferrer"
+>
+    Login to <span>lineage.sandrasagra.org</span>
+</a>
+
+<button
+    id="navigation-toggle"
+    type="button"
+    aria-haspopup="dialog"
+    aria-controls="navigation-guide"
+    aria-expanded="false"
+>
+    Navigation
+</button>
+
+<div
+    id="navigation-backdrop"
+    hidden
+></div>
+
+<aside
+    id="navigation-guide"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="navigation-title"
+    hidden
+>
+    <div class="navigation-guide-header">
+        <h2 id="navigation-title">Navigation</h2>
+
+        <button
+            id="navigation-close"
+            type="button"
+            aria-label="Close navigation guide"
+        >
+            ×
+        </button>
+    </div>
+
+    <section>
+        <h3>Find a relation</h3>
+        <p>
+            Select the input field, enter all or part of a name,
+            then press Return. Selecting the field clears its
+            current text without changing the person in focus.
+        </p>
+    </section>
+
+    <section>
+        <h3>Explore the family</h3>
+        <p>
+            Drag empty space to move through the chart. Use the
+            mouse wheel or pinch gesture to zoom. Click a person
+            on desktop, or double-tap on touch, to change focus.
+        </p>
+    </section>
+
+    <section>
+        <h3>View tooltips</h3>
+        <p>
+            Hover over a person with a mouse. On a touch screen,
+            tap once to show their full name, nicknames, and
+            relationship to the focused person.
+        </p>
+    </section>
+
+    <section>
+        <h3>Trace a relationship</h3>
+        <p>
+            Right-click a person, or press and hold on a touch
+            screen, then choose the relationship-path option.
+            The people and connections between that person and
+            the focused individual will be highlighted.
+        </p>
+    </section>
+</aside>
+
+
+<!-- ======================================
+     BRAND INTRO
+====================================== -->
+
+
+<header id="brand">
+
+
+    <h1>
+        SANDRASAGRA.ORG
+    </h1>
+
+
+    <h2>
+        This is how we relate
+    </h2>
+
+
+</header>
+
+
+
+<!-- ======================================
+     SEARCH
+====================================== -->
+
+
+<div id="search-panel">
+
+
+    <input
+
+        id="relation-input"
+
+        name="lineage-person-search"
+
+        type="search"
+
+        role="searchbox"
+
+        aria-label="Relate yourself"
+
+        aria-autocomplete="none"
+
+        autocomplete="off"
+
+        autocapitalize="none"
+
+        autocorrect="off"
+
+        spellcheck="false"
+
+        enterkeyhint="search"
+
+        data-form-type="other"
+
+        data-lpignore="true"
+
+        data-1p-ignore
+
+        data-bwignore
+
+        placeholder="Relate yourself"
+
+    >
+
+
+</div>
+
+
+
+<!-- ======================================
+     FAMILY UNIVERSE
+====================================== -->
+
+
+<div id="universe">
+
+</div>
+
+
+
+<script src="graph.js"></script>
+
+
+</body>
+
+</html>
