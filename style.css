@@ -722,11 +722,11 @@ LINEAGE LOGIN
 
     left:32px;
 
-    z-index:30;
+    z-index:45;
 
     color:rgba(255,255,255,.78);
 
-    font-size:24px;
+    font-size:18px;
 
     font-weight:300;
 
@@ -769,7 +769,7 @@ NAVIGATION GUIDE
 
     padding:0;
 
-    color:white;
+    color:rgba(255,255,255,.78);
 
     background:transparent;
 
@@ -779,15 +779,23 @@ NAVIGATION GUIDE
 
     font-size:18px;
 
-    letter-spacing:.12em;
+    font-weight:300;
+
+    letter-spacing:.08em;
 
     cursor:pointer;
 
-    opacity:.82;
+    opacity:0;
+
+    animation:
+
+        loginFade 2s ease forwards;
+
+    animation-delay:2s;
 
     transition:
-        opacity .25s ease,
-        text-shadow .25s ease;
+        color .3s ease,
+        text-shadow .3s ease;
 
 }
 
@@ -795,11 +803,14 @@ NAVIGATION GUIDE
 #navigation-toggle:hover,
 #navigation-toggle:focus-visible {
 
-    opacity:1;
+    color:white;
 
     outline:none;
 
-    text-shadow:0 0 12px rgba(255,255,255,.5);
+    text-shadow:
+
+        0 0 12px
+        rgba(255,255,255,.55);
 
 }
 
@@ -1517,7 +1528,7 @@ TABLET
 
         max-width:44vw;
 
-        font-size:18px;
+        font-size:16px;
 
     }
 
@@ -1670,7 +1681,7 @@ PHONE
 
         max-width:55vw;
 
-        font-size:15px;
+        font-size:14px;
 
         text-align:left;
 
