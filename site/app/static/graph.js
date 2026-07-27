@@ -1553,7 +1553,7 @@ function labelSizeForSeparation(separation) {
         );
 
     if (separation === 0)
-        return 13 * sizeScale;
+        return 16 * sizeScale;
 
     if (separation === 1)
         return 10.5 * sizeScale;
@@ -2691,6 +2691,10 @@ function arrangeFamilyRow(ids, centerX, y, rowSpacing) {
 
 function focusedLabelRadius(node) {
 
+    const prominentCoupleMember =
+
+        isFocusedCoupleMember(node.id);
+
     const name =
 
         String(node.id) === String(focusedPerson)
@@ -2719,28 +2723,64 @@ function focusedLabelRadius(node) {
 
         width <= 600
         ?
-        2.4
+        (
+            prominentCoupleMember
+            ?
+            3
+            :
+            2.4
+        )
         :
         (
             width <= 1024
             ?
-            2.8
+            (
+                prominentCoupleMember
+                ?
+                3.6
+                :
+                2.8
+            )
             :
-            3.2
+            (
+                prominentCoupleMember
+                ?
+                4.2
+                :
+                3.2
+            )
         );
 
     const maximumRadius =
 
         width <= 600
         ?
-        90
+        (
+            prominentCoupleMember
+            ?
+            115
+            :
+            90
+        )
         :
         (
             width <= 1024
             ?
-            120
+            (
+                prominentCoupleMember
+                ?
+                145
+                :
+                120
+            )
             :
-            150
+            (
+                prominentCoupleMember
+                ?
+                180
+                :
+                150
+            )
         );
 
     return Math.max(
@@ -2756,6 +2796,49 @@ function focusedLabelRadius(node) {
         )
 
     );
+
+}
+
+function isFocusedCoupleMember(personId) {
+
+    const normalizedPersonId = String(personId);
+    const normalizedFocusId = String(focusedPerson);
+
+    if (normalizedPersonId === normalizedFocusId)
+        return true;
+
+    return graph.links.some(link => {
+
+        if (link.type !== "spouse")
+            return false;
+
+        const source = String(
+            link.source.id
+            ??
+            link.source
+        );
+
+        const target = String(
+            link.target.id
+            ??
+            link.target
+        );
+
+        return (
+            (
+                source === normalizedFocusId
+                &&
+                target === normalizedPersonId
+            )
+            ||
+            (
+                target === normalizedFocusId
+                &&
+                source === normalizedPersonId
+            )
+        );
+
+    });
 
 }
 
