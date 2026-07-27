@@ -452,18 +452,47 @@ class FamilyGraph:
                 "unknown relative"
             ):
 
-                relationship = (
-                    self._regender_relationship(
-                        blood_relationship,
-                        person
-                    )
-                )
-
-                return (
-                    f"{relationship} by marriage"
+                return self._marriage_relationship_name(
+                    blood_relationship,
+                    person
                 )
 
         return "relative"
+
+
+    def _marriage_relationship_name(
+        self,
+        blood_relationship,
+        person
+    ):
+
+        relationship = self._regender_relationship(
+            blood_relationship,
+            person
+        )
+
+        in_law_endings = (
+            "son",
+            "daughter",
+            "child",
+            "brother",
+            "sister",
+            "sibling"
+        )
+
+        if relationship.endswith(in_law_endings):
+            return f"{relationship}-in-law"
+
+        step_endings = (
+            "father",
+            "mother",
+            "parent"
+        )
+
+        if relationship.endswith(step_endings):
+            return f"step-{relationship}"
+
+        return f"{relationship} by marriage"
 
 
     def _regender_relationship(

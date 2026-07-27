@@ -43,10 +43,14 @@ class RelationshipTests(unittest.TestCase):
             person("mother", 0),
             person("sister", 0),
             person("daughter", 0),
+            person("daughter_husband", 1),
+            person("son", 1),
+            person("son_wife", 0),
             person("grandfather", 1),
             person("grandmother", 0),
             person("aunt", 0),
             person("aunt_husband", 1),
+            person("sister_husband", 1),
             person("cousin", 1),
             person("cousin_child", 0),
             person("wife", 0),
@@ -70,6 +74,10 @@ class RelationshipTests(unittest.TestCase):
             parent("father", "sister"),
             parent("mother", "sister"),
             parent("root", "daughter"),
+            spouse("daughter", "daughter_husband"),
+            parent("root", "son"),
+            spouse("son", "son_wife"),
+            spouse("sister", "sister_husband"),
             parent("grandfather", "father"),
             parent("grandmother", "father"),
             parent("grandfather", "aunt"),
@@ -167,6 +175,27 @@ class RelationshipTests(unittest.TestCase):
                 "aunt_husband",
             ),
             "uncle by marriage",
+        )
+        self.assertEqual(
+            self.family.relationship(
+                "root",
+                "daughter_husband",
+            ),
+            "son-in-law",
+        )
+        self.assertEqual(
+            self.family.relationship(
+                "root",
+                "son_wife",
+            ),
+            "daughter-in-law",
+        )
+        self.assertEqual(
+            self.family.relationship(
+                "root",
+                "sister_husband",
+            ),
+            "brother-in-law",
         )
 
 
