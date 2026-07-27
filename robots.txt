@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /graph.json
+Disallow: /api/
+
