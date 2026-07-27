@@ -1344,7 +1344,7 @@ async function illuminateFamily(id) {
 
             d =>
 
-                String(d.id) === String(id)
+                isFocusedCoupleMember(d.id)
 
                 ?
 
@@ -2701,7 +2701,7 @@ function focusedLabelRadius(node) {
 
     const name =
 
-        String(node.id) === String(focusedPerson)
+        prominentCoupleMember
 
         ?
 
@@ -3670,9 +3670,9 @@ function personName(id) {
 
     return (
 
-        person.display_name
-        ||
         person.name
+        ||
+        person.display_name
         ||
         "Unknown"
 
