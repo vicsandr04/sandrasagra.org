@@ -1567,7 +1567,11 @@ function labelSizeForSeparation(separation) {
 
 function nodeSizeForSeparation(separation, id) {
 
-    if (separation === 0)
+    if (
+        separation === 0
+        ||
+        isFocusedCoupleMember(id)
+    )
         return 8;
 
     if (familyLayoutTargets.has(id))
@@ -3119,9 +3123,7 @@ function nodeHover(event,d){
 
             "r",
 
-            String(focusedPerson)
-            ===
-            String(d.id)
+            isFocusedCoupleMember(d.id)
             ?
             8
             :
@@ -3687,7 +3689,8 @@ function nodeOut(){
 
         .filter(
 
-            d=>d.id!==focusedPerson
+            d =>
+                !isFocusedCoupleMember(d.id)
 
         )
 
@@ -3739,9 +3742,7 @@ function nodeClick(event,d){
 
                 "r",
 
-                String(focusedPerson)
-                ===
-                String(d.id)
+                isFocusedCoupleMember(d.id)
                 ?
                 8
                 :
