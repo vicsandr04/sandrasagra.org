@@ -565,7 +565,21 @@ function buildNodes(nodes) {
 
         .on("click", nodeClick)
 
-        .on("dblclick", nodeDoubleClick);
+        .on("dblclick", nodeDoubleClick)
+
+        .on("contextmenu", nodeContextMenu)
+
+        .on("pointerdown.longpress", nodeLongPressStart)
+
+        .on("pointermove.longpress", nodeLongPressMove)
+
+        .on(
+
+            "pointerup.longpress pointercancel.longpress",
+
+            cancelNodeLongPress
+
+        );
 
 }
 
@@ -1037,6 +1051,8 @@ function beginExploration(person) {
 //
 
 function focusPerson(person) {
+
+    clearRelationshipTrace();
 
     focusedPerson = person.id;
 
@@ -2513,8 +2529,14 @@ function baseNodeRadius() {
 //
 
 let tooltip = null;
+let relationshipMenu = null;
+let relationshipMenuPerson = null;
+let longPressTimer = null;
+let longPressOrigin = null;
+let suppressNextNodeClick = false;
 
 createTooltip();
+createRelationshipMenu();
 startAmbientMotion();
 
 //
@@ -2556,6 +2578,79 @@ function createTooltip() {
         .style("line-height","1.5")
 
         .style("border","1px solid rgba(255,255,255,.12)");
+
+}
+
+function createRelationshipMenu() {
+
+    relationshipMenu =
+
+        document.createElement("div");
+
+    relationshipMenu.id =
+        "relationship-menu";
+
+    relationshipMenu.setAttribute(
+
+        "role",
+
+        "menu"
+
+    );
+
+    const traceButton =
+
+        document.createElement("button");
+
+    traceButton.type = "button";
+    traceButton.setAttribute("role","menuitem");
+
+    traceButton.addEventListener(
+
+        "click",
+
+        event => {
+
+            event.stopPropagation();
+
+            if (
+                relationshipMenuPerson
+                &&
+                focusedPerson
+            )
+                traceRelationshipToFocus(
+
+                    relationshipMenuPerson
+
+                );
+
+            hideRelationshipMenu();
+
+        }
+
+    );
+
+    relationshipMenu.appendChild(traceButton);
+    document.body.appendChild(relationshipMenu);
+
+    document.addEventListener(
+
+        "pointerdown",
+
+        event => {
+
+            if (
+                relationshipMenu
+                &&
+                !relationshipMenu.contains(
+                    event.target
+                )
+            )
+                hideRelationshipMenu();
+
+        }
+
+    );
 
 }
 
@@ -3032,6 +3127,16 @@ function nodeClick(event,d){
 
     event.stopPropagation();
 
+    if (suppressNextNodeClick) {
+
+        suppressNextNodeClick = false;
+
+        event.preventDefault();
+
+        return;
+
+    }
+
     if (isTouchDevice()) {
 
         d3.select(this)
@@ -3094,6 +3199,311 @@ function nodeDoubleClick(event,d) {
         .attr("opacity",1);
 
     showNodeTooltip(event,d);
+
+}
+
+function nodeContextMenu(event,d) {
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    openRelationshipMenu(
+
+        event,
+
+        d
+
+    );
+
+}
+
+function nodeLongPressStart(event,d) {
+
+    if (
+        event.pointerType === "mouse"
+        ||
+        !isTouchDevice()
+    )
+        return;
+
+    cancelNodeLongPress();
+
+    longPressOrigin = {
+        x: event.clientX,
+        y: event.clientY
+    };
+
+    const menuEvent = {
+        clientX: event.clientX,
+        clientY: event.clientY
+    };
+
+    longPressTimer = setTimeout(
+
+        () => {
+
+            suppressNextNodeClick = true;
+
+            openRelationshipMenu(
+
+                menuEvent,
+
+                d
+
+            );
+
+            longPressTimer = null;
+
+            setTimeout(
+
+                () => {
+
+                    suppressNextNodeClick = false;
+
+                },
+
+                1200
+
+            );
+
+        },
+
+        650
+
+    );
+
+}
+
+function nodeLongPressMove(event) {
+
+    if (
+        !longPressTimer
+        ||
+        !longPressOrigin
+    )
+        return;
+
+    const movement =
+
+        Math.hypot(
+
+            event.clientX - longPressOrigin.x,
+
+            event.clientY - longPressOrigin.y
+
+        );
+
+    if (movement > 12)
+        cancelNodeLongPress();
+
+}
+
+function cancelNodeLongPress() {
+
+    if (longPressTimer)
+        clearTimeout(longPressTimer);
+
+    longPressTimer = null;
+    longPressOrigin = null;
+
+}
+
+function openRelationshipMenu(event,person) {
+
+    if (!relationshipMenu)
+        return;
+
+    relationshipMenuPerson = person;
+
+    const button =
+
+        relationshipMenu.querySelector("button");
+
+    button.disabled = !focusedPerson;
+
+    button.textContent =
+
+        focusedPerson
+        ?
+        `Trace relationship path to ${personName(
+            focusedPerson
+        )}`
+        :
+        "Select a person to focus first";
+
+    relationshipMenu.classList.add("is-visible");
+
+    const menuWidth = 310;
+    const menuHeight = 72;
+
+    relationshipMenu.style.left =
+
+        `${Math.max(
+
+            12,
+
+            Math.min(
+
+                event.clientX,
+
+                window.innerWidth
+                -
+                menuWidth
+                -
+                12
+
+            )
+
+        )}px`;
+
+    relationshipMenu.style.top =
+
+        `${Math.max(
+
+            12,
+
+            Math.min(
+
+                event.clientY,
+
+                window.innerHeight
+                -
+                menuHeight
+                -
+                12
+
+            )
+
+        )}px`;
+
+}
+
+function hideRelationshipMenu() {
+
+    if (!relationshipMenu)
+        return;
+
+    relationshipMenu.classList.remove("is-visible");
+    relationshipMenuPerson = null;
+
+}
+
+function traceRelationshipToFocus(person) {
+
+    const path =
+
+        findRelationshipPath(
+
+            focusedPerson,
+
+            person.id
+
+        );
+
+    if (!path)
+        return;
+
+    const pathPeople = new Set(path.nodes);
+    const pathConnections = new Set();
+
+    for (
+        let index = 1;
+        index < path.nodes.length;
+        index += 1
+    ) {
+
+        pathConnections.add(
+
+            relationshipEdgeKey(
+
+                path.nodes[index - 1],
+
+                path.nodes[index]
+
+            )
+
+        );
+
+    }
+
+    nodeSelection.classed(
+
+        "relationship-path-node",
+
+        node =>
+            pathPeople.has(String(node.id))
+
+    );
+
+    labelSelection.classed(
+
+        "relationship-path-label",
+
+        node =>
+            pathPeople.has(String(node.id))
+
+    );
+
+    linkSelection.classed(
+
+        "relationship-path-link",
+
+        link =>
+            pathConnections.has(
+
+                relationshipEdgeKey(
+
+                    link.source.id
+                    ??
+                    link.source,
+
+                    link.target.id
+                    ??
+                    link.target
+
+                )
+
+            )
+
+    );
+
+}
+
+function relationshipEdgeKey(firstId,secondId) {
+
+    return [
+
+        String(firstId),
+
+        String(secondId)
+
+    ]
+
+    .sort()
+
+    .join("::");
+
+}
+
+function clearRelationshipTrace() {
+
+    if (nodeSelection)
+        nodeSelection.classed(
+            "relationship-path-node",
+            false
+        );
+
+    if (labelSelection)
+        labelSelection.classed(
+            "relationship-path-label",
+            false
+        );
+
+    if (linkSelection)
+        linkSelection.classed(
+            "relationship-path-link",
+            false
+        );
 
 }
 
@@ -3293,6 +3703,20 @@ document.addEventListener(
 
         ){
 
+            if (
+                relationshipMenu
+                &&
+                relationshipMenu.classList.contains(
+                    "is-visible"
+                )
+            ) {
+
+                hideRelationshipMenu();
+
+                return;
+
+            }
+
             resetUniverse();
 
         }
@@ -3308,6 +3732,9 @@ document.addEventListener(
 //
 
 function resetUniverse(){
+
+    hideRelationshipMenu();
+    clearRelationshipTrace();
 
     focusedPerson=null;
 

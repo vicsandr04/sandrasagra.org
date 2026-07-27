@@ -870,6 +870,135 @@ TOOLTIP
 }
 
 
+/*
+====================================================
+RELATIONSHIP PATH MENU
+====================================================
+*/
+
+
+#relationship-menu {
+
+    position:fixed;
+
+    z-index:80;
+
+    display:none;
+
+    width:min(298px,calc(100vw - 24px));
+
+    padding:8px;
+
+    background:rgba(0,8,72,.94);
+
+    border:1px solid rgba(255,255,255,.34);
+
+    border-radius:12px;
+
+    box-shadow:0 14px 42px rgba(0,0,0,.38);
+
+    backdrop-filter:blur(14px);
+
+}
+
+
+#relationship-menu.is-visible {
+
+    display:block;
+
+}
+
+
+#relationship-menu button {
+
+    width:100%;
+
+    min-height:46px;
+
+    padding:10px 12px;
+
+    color:white;
+
+    background:#001489;
+
+    border:1px solid rgba(255,255,255,.2);
+
+    border-radius:8px;
+
+    font:inherit;
+
+    font-size:13px;
+
+    line-height:1.35;
+
+    text-align:left;
+
+    cursor:pointer;
+
+}
+
+
+#relationship-menu button:hover,
+#relationship-menu button:focus-visible {
+
+    background:#1D3AC4;
+
+    outline:none;
+
+}
+
+
+#relationship-menu button:disabled {
+
+    opacity:.5;
+
+    cursor:default;
+
+}
+
+
+.relationship-path-node {
+
+    opacity:1 !important;
+
+    fill:white !important;
+
+    stroke:#1D3AC4 !important;
+
+    stroke-width:5px !important;
+
+    filter:
+        drop-shadow(0 0 7px white)
+        drop-shadow(0 0 16px #1D3AC4)
+        !important;
+
+}
+
+
+.relationship-path-link {
+
+    opacity:1 !important;
+
+    stroke:white !important;
+
+    stroke-width:3px !important;
+
+    filter:drop-shadow(0 0 5px #1D3AC4);
+
+}
+
+
+.relationship-path-label {
+
+    opacity:1 !important;
+
+    font-weight:700;
+
+    filter:drop-shadow(0 0 5px #001489);
+
+}
+
+
 body.universe-active #relation-input {
 
     width:680px;
