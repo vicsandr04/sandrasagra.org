@@ -451,11 +451,95 @@ class FamilyGraph:
                 "relative by marriage",
                 "unknown relative"
             ):
+
+                relationship = (
+                    self._regender_relationship(
+                        blood_relationship,
+                        person
+                    )
+                )
+
                 return (
-                    f"{blood_relationship} by marriage"
+                    f"{relationship} by marriage"
                 )
 
         return "relative"
+
+
+    def _regender_relationship(
+        self,
+        relationship,
+        person
+    ):
+
+        gendered_terms = [
+            (
+                "grandfather",
+                "grandmother",
+                "grandparent"
+            ),
+            (
+                "grandson",
+                "granddaughter",
+                "grandchild"
+            ),
+            (
+                "father",
+                "mother",
+                "parent"
+            ),
+            (
+                "son",
+                "daughter",
+                "child"
+            ),
+            (
+                "brother",
+                "sister",
+                "sibling"
+            ),
+            (
+                "uncle",
+                "aunt",
+                "parent's sibling"
+            ),
+            (
+                "nephew",
+                "niece",
+                "sibling's descendant"
+            )
+        ]
+
+        for male, female, neutral in gendered_terms:
+
+            matched_term = None
+
+            if relationship.endswith(male):
+                matched_term = male
+            elif relationship.endswith(female):
+                matched_term = female
+            elif relationship.endswith(neutral):
+                matched_term = neutral
+
+            if not matched_term:
+                continue
+
+            prefix = relationship[
+                :-len(matched_term)
+            ]
+
+            return (
+                prefix
+                +
+                self._gendered(
+                    person,
+                    male,
+                    female,
+                    neutral
+                )
+            )
+
+        return relationship
 
 
     @staticmethod
