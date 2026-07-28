@@ -152,6 +152,12 @@ let focusedPerson = null;
 
 let focusedRelationshipLabels = new Map();
 
+let focusedNodeSizes = new Map();
+
+let relationshipTraceTerminals = new Set();
+
+let relationshipTraceTerminalSize = 0;
+
 let tooltipPersonId = null;
 
 
@@ -1821,6 +1827,42 @@ async function illuminateFamily(id) {
 
         coupleLabelSeparations(separation);
 
+    focusedNodeSizes =
+
+        new Map(
+
+            graph.nodes.map(node => [
+
+                String(node.id),
+
+                nodeSizeForSeparation(
+                    separation.get(String(node.id)),
+                    String(node.id)
+                )
+
+            ])
+
+        );
+
+    if (relationshipTraceTerminals.size)
+        relationshipTraceTerminalSize =
+
+            Math.max(
+
+                ...[
+                    ...relationshipTraceTerminals
+                ].map(
+
+                    personId =>
+
+                        focusedNodeSizes.get(personId)
+                        ??
+                        baseNodeRadius()
+
+                )
+
+            );
+
     const chartPeople =
 
         new Set(
@@ -1858,12 +1900,20 @@ async function illuminateFamily(id) {
 
             d =>
 
-                nodeSizeForSeparation(
-
-                    separation.get(String(d.id)),
-
+                relationshipTraceTerminals.has(
                     String(d.id)
+                )
 
+                ?
+
+                relationshipTraceTerminalSize
+
+                :
+
+                (
+                    focusedNodeSizes.get(String(d.id))
+                    ??
+                    baseNodeRadius()
                 )
 
 
@@ -3680,6 +3730,28 @@ function createRelationshipMenu() {
 // ------------------------------------------------------------
 //
 
+function interactiveNodeRadius(person) {
+
+    const personId = String(person.id);
+
+    if (relationshipTraceTerminals.has(personId))
+        return relationshipTraceTerminalSize;
+
+    if (isFocusedCoupleMember(personId))
+        return 8;
+
+    return Math.max(
+
+        6,
+
+        focusedNodeSizes.get(personId)
+        ??
+        baseNodeRadius()
+
+    );
+
+}
+
 function nodeHover(event,d){
 
     d3.select(this)
@@ -3692,11 +3764,7 @@ function nodeHover(event,d){
 
             "r",
 
-            isFocusedCoupleMember(d.id)
-            ?
-            8
-            :
-            6
+            interactiveNodeRadius(d)
 
         )
 
@@ -4354,7 +4422,27 @@ function nodeOut(){
 
             "r",
 
-            baseNodeRadius()
+            d =>
+
+                relationshipTraceTerminals.has(
+                    String(d.id)
+                )
+
+                ?
+
+                relationshipTraceTerminalSize
+
+                :
+
+                (
+                    focusedNodeSizes.get(
+                        String(d.id)
+                    )
+
+                    ??
+
+                    baseNodeRadius()
+                )
 
         )
 
@@ -4394,11 +4482,7 @@ function nodeClick(event,d){
 
                 "r",
 
-                isFocusedCoupleMember(d.id)
-                ?
-                8
-                :
-                6
+                interactiveNodeRadius(d)
 
             )
 
@@ -4648,8 +4732,42 @@ function traceRelationshipToFocus(person) {
     if (!path)
         return;
 
+    clearRelationshipTrace();
+
     const pathPeople = new Set(path.nodes);
     const pathConnections = new Set();
+
+    relationshipTraceTerminals =
+
+        new Set([
+
+            String(path.nodes[0]),
+
+            String(
+                path.nodes[
+                    path.nodes.length - 1
+                ]
+            )
+
+        ]);
+
+    relationshipTraceTerminalSize =
+
+        Math.max(
+
+            ...[
+                ...relationshipTraceTerminals
+            ].map(
+
+                personId =>
+
+                    focusedNodeSizes.get(personId)
+                    ??
+                    baseNodeRadius()
+
+            )
+
+        );
 
     for (
         let index = 1;
@@ -4679,6 +4797,24 @@ function traceRelationshipToFocus(person) {
             pathPeople.has(String(node.id))
 
     );
+
+    nodeSelection
+
+        .filter(
+
+            node =>
+                relationshipTraceTerminals.has(
+                    String(node.id)
+                )
+
+        )
+
+        .interrupt()
+
+        .attr(
+            "r",
+            relationshipTraceTerminalSize
+        );
 
     labelSelection.classed(
 
@@ -4770,11 +4906,46 @@ function relationshipEdgeKey(firstId,secondId) {
 
 function clearRelationshipTrace() {
 
-    if (nodeSelection)
+    if (nodeSelection) {
+
+        nodeSelection
+
+            .filter(
+
+                node =>
+                    relationshipTraceTerminals.has(
+                        String(node.id)
+                    )
+
+            )
+
+            .interrupt()
+
+            .attr(
+
+                "r",
+
+                node =>
+
+                    focusedNodeSizes.get(
+                        String(node.id)
+                    )
+
+                    ??
+
+                    baseNodeRadius()
+
+            );
+
         nodeSelection.classed(
             "relationship-path-node",
             false
         );
+
+    }
+
+    relationshipTraceTerminals.clear();
+    relationshipTraceTerminalSize = 0;
 
     if (labelSelection)
         labelSelection
@@ -5070,6 +5241,8 @@ function resetUniverse(){
     clearRelationshipTrace();
 
     focusedPerson=null;
+
+    focusedNodeSizes.clear();
 
     familyLayoutTargets.clear();
 
