@@ -1115,7 +1115,7 @@ function setupSearch() {
             ||
             !graph
             ||
-            !searchValue
+            searchValue.length < 5
         ) {
 
             hideSuggestions();

@@ -378,6 +378,12 @@ RELATE YOURSELF FIELD
 
     position:absolute;
 
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+
 
     top:65%;
 
@@ -589,15 +595,15 @@ RELATE YOURSELF FIELD
 
     display:flex;
 
-    gap:8px;
+    gap:4px;
 
-    width:380px;
+    width:max-content;
 
-    max-width:85vw;
+    max-width:calc(100vw - 32px);
 
-    margin:8px auto 0;
+    margin:5px auto 0;
 
-    padding:7px;
+    padding:2px;
 
     overflow-x:auto;
 
@@ -605,7 +611,7 @@ RELATE YOURSELF FIELD
         1px solid
         rgba(255,255,255,.24);
 
-    border-radius:18px;
+    border-radius:12px;
 
     background:rgba(0,20,137,.88);
 
@@ -635,13 +641,13 @@ RELATE YOURSELF FIELD
 
     flex:0 0 auto;
 
-    padding:8px 13px;
+    padding:2px 8px;
 
     border:
         1px solid
         rgba(255,255,255,.16);
 
-    border-radius:14px;
+    border-radius:9px;
 
     background:rgba(255,255,255,.08);
 
@@ -649,7 +655,7 @@ RELATE YOURSELF FIELD
 
     font:inherit;
 
-    font-size:13px;
+    font-size:12px;
 
     white-space:nowrap;
 
@@ -1370,12 +1376,12 @@ body.universe-active #relation-input {
 
 body.universe-active #relation-suggestions {
 
-    width:680px;
+    width:max-content;
 
     max-width:
 
         calc(
-            112vw
+            100vw
             -
             32px
         );
