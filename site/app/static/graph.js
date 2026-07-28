@@ -1169,6 +1169,49 @@ function setupSearch() {
                     ||
                     "";
 
+                const formalNameMatches =
+
+                    [
+                        person.name,
+                        person.display_name
+                    ]
+
+                        .filter(Boolean)
+
+                        .some(
+
+                            name =>
+                                name
+                                    .toLowerCase()
+                                    .includes(
+                                        searchValue.toLowerCase()
+                                    )
+
+                        );
+
+                if (!formalNameMatches) {
+
+                    const matchedAlternateName =
+
+                        personSearchNames(person)
+
+                            .find(
+
+                                name =>
+                                    name
+                                        .toLowerCase()
+                                        .includes(
+                                            searchValue.toLowerCase()
+                                        )
+
+                            );
+
+                    if (matchedAlternateName)
+                        button.textContent +=
+                            ` — ${matchedAlternateName}`;
+
+                }
+
                 button.addEventListener(
 
                     "pointerdown",
@@ -1592,12 +1635,7 @@ function findPeopleByName(value,limit = 6) {
 
             person =>
 
-                [
-                    person.name,
-                    person.display_name
-                ]
-
-                    .filter(Boolean)
+                personSearchNames(person)
 
                     .some(
 
@@ -1648,6 +1686,50 @@ function findPeopleByName(value,limit = 6) {
         )
 
         .slice(0,limit);
+
+}
+
+function personSearchNames(person) {
+
+    return [
+
+        person.name,
+        person.display_name,
+
+        ...(
+            Array.isArray(person.nicknames)
+            ?
+            person.nicknames
+            :
+            []
+        ),
+
+        ...(
+            Array.isArray(person.alternate_names)
+            ?
+            person.alternate_names
+            :
+            []
+        ),
+
+        ...(
+            Array.isArray(person.search_names)
+            ?
+            person.search_names
+            :
+            []
+        )
+
+    ]
+
+        .filter(
+
+            value =>
+                typeof value === "string"
+                &&
+                value.trim()
+
+        );
 
 }
 

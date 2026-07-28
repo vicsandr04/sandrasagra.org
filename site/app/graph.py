@@ -68,6 +68,139 @@ def display_name(full_name):
     )
 
 
+def _unique_names(values):
+
+    result = []
+    seen = set()
+
+    for value in values:
+
+        if not isinstance(value, str):
+            continue
+
+        value = " ".join(value.split())
+
+        if not value:
+            continue
+
+        key = value.casefold()
+
+        if key in seen:
+            continue
+
+        seen.add(key)
+        result.append(value)
+
+    return result
+
+
+def _alternate_full_name(name):
+
+    surnames = [
+
+        surname.get("surname", "")
+
+        for surname in (
+            name.get(
+                "surname_list",
+                []
+            )
+            or
+            []
+        )
+
+        if isinstance(surname, dict)
+
+    ]
+
+    return " ".join(
+
+        part
+
+        for part in [
+            name.get("first_name", ""),
+            *surnames,
+            name.get("suffix", ""),
+        ]
+
+        if isinstance(part, str)
+        and part.strip()
+
+    )
+
+
+def extract_person_names(data):
+
+    nickname_values = []
+    alternate_values = []
+
+    primary_name = data.get(
+        "primary_name",
+        {}
+    )
+
+    if (
+        isinstance(primary_name, dict)
+        and
+        not primary_name.get("private")
+    ):
+
+        nickname_values.extend([
+            primary_name.get("call"),
+            primary_name.get("nick"),
+            primary_name.get("famnick"),
+        ])
+
+    alternate_names = (
+        data.get(
+            "alternate_names",
+            []
+        )
+        or
+        []
+    )
+
+    if not isinstance(alternate_names, list):
+        alternate_names = []
+
+    for alternate_name in alternate_names:
+
+        if (
+            not isinstance(alternate_name, dict)
+            or
+            alternate_name.get("private")
+        ):
+            continue
+
+        alternate_values.extend([
+            _alternate_full_name(alternate_name),
+            alternate_name.get("first_name"),
+        ])
+
+        nickname_values.extend([
+            alternate_name.get("call"),
+            alternate_name.get("nick"),
+            alternate_name.get("famnick"),
+        ])
+
+    nicknames = _unique_names(
+        nickname_values
+    )
+
+    alternate_names = _unique_names(
+        alternate_values
+    )
+
+    return {
+        "nicknames": nicknames,
+        "alternate_names": alternate_names,
+        "search_names": _unique_names([
+            *nicknames,
+            *alternate_names,
+        ]),
+    }
+
+
 # =====================================================
 # LOAD PEOPLE
 # =====================================================
@@ -127,7 +260,9 @@ def load_people(conn):
 
             pass
 
-
+        additional_names = (
+            extract_person_names(data)
+        )
 
         people[handle]={
 
@@ -148,6 +283,8 @@ def load_people(conn):
                 display_name(
                     full_name
                 ),
+
+            **additional_names,
 
 
             "gender":
