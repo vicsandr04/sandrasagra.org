@@ -973,8 +973,218 @@ function setupSearch() {
         "relation-input"
     );
 
-    if (!input)
+    const suggestions = document.getElementById(
+        "relation-suggestions"
+    );
+
+    if (
+        !input
+        ||
+        !suggestions
+    )
         return;
+
+    let suggestionMatches = [];
+    let activeSuggestionIndex = -1;
+
+    const hideSuggestions = () => {
+
+        suggestionMatches = [];
+        activeSuggestionIndex = -1;
+        suggestions.replaceChildren();
+        suggestions.hidden = true;
+
+        input.setAttribute("aria-expanded","false");
+        input.removeAttribute("aria-activedescendant");
+
+    };
+
+    const selectSuggestion = person => {
+
+        const fullName =
+
+            person.name
+            ||
+            person.display_name
+            ||
+            "";
+
+        const separatorIndex =
+            input.value.lastIndexOf("/");
+
+        if (separatorIndex === -1) {
+
+            input.value = fullName;
+
+        } else {
+
+            const firstValue =
+                input.value
+                    .slice(0, separatorIndex)
+                    .trim();
+
+            input.value =
+
+                (
+                    firstValue
+                    ?
+                    `${firstValue} / `
+                    :
+                    "/ "
+                )
+
+                +
+                fullName;
+
+        }
+
+        hideSuggestions();
+
+    };
+
+    const setActiveSuggestion = index => {
+
+        if (!suggestionMatches.length)
+            return;
+
+        activeSuggestionIndex =
+
+            (
+                index
+                +
+                suggestionMatches.length
+            )
+
+            %
+            suggestionMatches.length;
+
+        suggestions
+
+            .querySelectorAll(".relation-suggestion")
+
+            .forEach(
+
+                (button,buttonIndex) => {
+
+                    const isActive =
+                        buttonIndex === activeSuggestionIndex;
+
+                    button.classList.toggle(
+                        "is-active",
+                        isActive
+                    );
+
+                    button.setAttribute(
+                        "aria-selected",
+                        String(isActive)
+                    );
+
+                    if (isActive) {
+
+                        input.setAttribute(
+                            "aria-activedescendant",
+                            button.id
+                        );
+
+                        button.scrollIntoView({
+                            block: "nearest",
+                            inline: "nearest"
+                        });
+
+                    }
+
+                }
+
+            );
+
+    };
+
+    const showSuggestions = () => {
+
+        const separatorIndex =
+            input.value.lastIndexOf("/");
+
+        const searchValue =
+
+            input.value
+                .slice(separatorIndex + 1)
+                .trim();
+
+        if (
+            !App.searchEnabled
+            ||
+            !graph
+            ||
+            !searchValue
+        ) {
+
+            hideSuggestions();
+
+            return;
+
+        }
+
+        suggestionMatches =
+            findPeopleByName(searchValue,6);
+
+        activeSuggestionIndex = -1;
+        suggestions.replaceChildren();
+
+        if (!suggestionMatches.length) {
+
+            hideSuggestions();
+
+            return;
+
+        }
+
+        suggestionMatches.forEach(
+
+            (person,index) => {
+
+                const button =
+                    document.createElement("button");
+
+                button.id =
+                    `relation-suggestion-${index}`;
+
+                button.type = "button";
+                button.className = "relation-suggestion";
+                button.setAttribute("role","option");
+                button.setAttribute("aria-selected","false");
+
+                button.textContent =
+
+                    person.name
+                    ||
+                    person.display_name
+                    ||
+                    "";
+
+                button.addEventListener(
+
+                    "pointerdown",
+
+                    event => {
+
+                        event.preventDefault();
+                        selectSuggestion(person);
+                        input.focus();
+
+                    }
+
+                );
+
+                suggestions.appendChild(button);
+
+            }
+
+        );
+
+        suggestions.hidden = false;
+        input.setAttribute("aria-expanded","true");
+
+    };
 
     startSearchPromptRotation(input);
 
@@ -983,6 +1193,8 @@ function setupSearch() {
         input.value = "";
 
         input.placeholder = "";
+
+        hideSuggestions();
 
     };
 
@@ -996,12 +1208,30 @@ function setupSearch() {
 
     input.addEventListener(
 
+        "input",
+
+        showSuggestions
+
+    );
+
+    input.addEventListener(
+
+        "focus",
+
+        showSuggestions
+
+    );
+
+    input.addEventListener(
+
         "blur",
 
         () => {
 
             if (!input.value)
                 input.placeholder = SEARCH_PROMPTS[0];
+
+            setTimeout(hideSuggestions,120);
 
         }
 
@@ -1013,9 +1243,61 @@ function setupSearch() {
         async event => {
 
             if (
+                event.key === "ArrowDown"
+                ||
+                event.key === "ArrowUp"
+            ) {
+
+                event.preventDefault();
+
+                if (suggestions.hidden)
+                    showSuggestions();
+
+                setActiveSuggestion(
+
+                    activeSuggestionIndex
+                    +
+                    (
+                        event.key === "ArrowDown"
+                        ?
+                        1
+                        :
+                        -1
+                    )
+
+                );
+
+                return;
+
+            }
+
+            if (event.key === "Escape") {
+
+                hideSuggestions();
+
+                return;
+
+            }
+
+            if (
                 event.key !== "Enter"
             )
                 return;
+
+            if (
+                activeSuggestionIndex >= 0
+                &&
+                suggestionMatches[
+                    activeSuggestionIndex
+                ]
+            )
+                selectSuggestion(
+                    suggestionMatches[
+                        activeSuggestionIndex
+                    ]
+                );
+
+            hideSuggestions();
 
             if (
                 !App.searchEnabled
@@ -1128,33 +1410,80 @@ function setupSearch() {
 
 function findPersonByName(value) {
 
+    return findPeopleByName(value,1)[0] || null;
+
+}
+
+function findPeopleByName(value,limit = 6) {
+
     const searchValue =
         String(value || "").trim().toLowerCase();
 
     if (!searchValue)
-        return null;
+        return [];
 
-    return graph.nodes.find(
+    return graph.nodes
 
-        person =>
+        .filter(
 
-            [
-                person.name,
-                person.display_name
-            ]
+            person =>
 
-                .filter(Boolean)
+                [
+                    person.name,
+                    person.display_name
+                ]
 
-                .some(
+                    .filter(Boolean)
 
-                    name =>
-                        name
-                            .toLowerCase()
-                            .includes(searchValue)
+                    .some(
 
-                )
+                        name =>
+                            name
+                                .toLowerCase()
+                                .includes(searchValue)
 
-    ) || null;
+                    )
+
+        )
+
+        .sort(
+
+            (first,second) => {
+
+                const firstName =
+                    (
+                        first.name
+                        ||
+                        first.display_name
+                        ||
+                        ""
+                    ).toLowerCase();
+
+                const secondName =
+                    (
+                        second.name
+                        ||
+                        second.display_name
+                        ||
+                        ""
+                    ).toLowerCase();
+
+                const firstStarts =
+                    firstName.startsWith(searchValue);
+
+                const secondStarts =
+                    secondName.startsWith(searchValue);
+
+                if (firstStarts !== secondStarts)
+                    return firstStarts ? -1 : 1;
+
+                return firstName.localeCompare(secondName);
+
+            }
+
+        )
+
+        .slice(0,limit);
 
 }
 

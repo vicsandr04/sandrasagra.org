@@ -150,7 +150,11 @@
 
         aria-label="Relate yourself"
 
-        aria-autocomplete="none"
+        aria-autocomplete="list"
+
+        aria-controls="relation-suggestions"
+
+        aria-expanded="false"
 
         autocomplete="off"
 
@@ -173,6 +177,18 @@
         placeholder="Relate yourself"
 
     >
+
+    <div
+
+        id="relation-suggestions"
+
+        role="listbox"
+
+        aria-label="Name suggestions"
+
+        hidden
+
+    ></div>
 
 
 </div>
