@@ -1245,6 +1245,20 @@ RELATIONSHIP PATH MENU
 
 }
 
+.tooltip-path {
+
+    opacity:.78;
+
+}
+
+.tooltip-common-ancestor {
+
+    color:#ffd84d;
+
+    font-weight:700;
+
+}
+
 
 body.universe-active #relation-input {
 

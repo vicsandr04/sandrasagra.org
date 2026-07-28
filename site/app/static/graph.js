@@ -3386,29 +3386,48 @@ function showNodeTooltip(event,d) {
 
             );
 
-        tooltip
+        const pathLine = tooltip
 
             .append("div")
 
             .style("margin-top","4px")
 
-            .style("opacity",.78)
+            .attr("class","tooltip-path");
 
-            .text(
+        pathLine.append("span")
 
-                "Path from focus: "
-                +
-                relationshipPath.nodes
+            .text("Path from focus: ");
 
-                    .map(personId =>
+        const commonAncestorIndex =
+            relationshipCommonAncestorIndex(
+                relationshipPath
+            );
 
-                        personName(personId)
+        relationshipPath.nodes.forEach(
 
+            (personId,index) => {
+
+                if (index)
+                    pathLine
+
+                        .append("span")
+
+                        .text(" → ");
+
+                pathLine
+
+                    .append("span")
+
+                    .classed(
+                        "tooltip-common-ancestor",
+                        index === commonAncestorIndex
                     )
 
-                    .join(" → ")
+                    .text(personName(personId));
 
-            );
+            }
+
+        );
 
     }
 
@@ -3714,6 +3733,70 @@ function findRelationshipPath(startId, endId) {
     }
 
     return null;
+
+}
+
+function relationshipCommonAncestorIndex(path) {
+
+    const relationships = path.relationships;
+
+    if (
+        !relationships.length
+        ||
+        relationships.includes("spouse")
+    )
+        return -1;
+
+    const firstChildIndex =
+        relationships.indexOf("child");
+
+    if (firstChildIndex === 0)
+        return relationships.every(
+            relationship =>
+                relationship === "child"
+        )
+        ?
+        0
+        :
+        -1;
+
+    if (firstChildIndex === -1)
+        return relationships.every(
+            relationship =>
+                relationship === "parent"
+        )
+        ?
+        path.nodes.length - 1
+        :
+        -1;
+
+    const ascendsToAncestor =
+
+        relationships
+            .slice(0, firstChildIndex)
+            .every(
+                relationship =>
+                    relationship === "parent"
+            );
+
+    const descendsFromAncestor =
+
+        relationships
+            .slice(firstChildIndex)
+            .every(
+                relationship =>
+                    relationship === "child"
+            );
+
+    return (
+        ascendsToAncestor
+        &&
+        descendsFromAncestor
+    )
+    ?
+    firstChildIndex
+    :
+    -1;
 
 }
 
