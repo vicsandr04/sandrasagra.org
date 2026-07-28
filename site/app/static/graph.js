@@ -1038,6 +1038,8 @@ function setupSearch() {
 
         }
 
+        resizeRelationInput(input);
+
         hideSuggestions();
 
     };
@@ -1194,6 +1196,8 @@ function setupSearch() {
 
         input.placeholder = "";
 
+        resizeRelationInput(input);
+
         hideSuggestions();
 
     };
@@ -1210,7 +1214,12 @@ function setupSearch() {
 
         "input",
 
-        showSuggestions
+        () => {
+
+            resizeRelationInput(input);
+            showSuggestions();
+
+        }
 
     );
 
@@ -1382,6 +1391,8 @@ function setupSearch() {
                 input.value =
                     `${personName(firstPerson.id)} / ${personName(secondPerson.id)}`;
 
+                resizeRelationInput(input);
+
                 return;
 
             }
@@ -1405,6 +1416,133 @@ function setupSearch() {
         }
 
     );
+
+    window.addEventListener(
+
+        "resize",
+
+        () => resizeRelationInput(input)
+
+    );
+
+}
+
+function resizeRelationInput(input) {
+
+    if (!input)
+        return;
+
+    input.style.removeProperty("width");
+
+    const style = window.getComputedStyle(input);
+    const baseWidth = parseFloat(style.width) || 0;
+
+    if (!input.value) {
+
+        input.style.width = `${baseWidth}px`;
+
+        return;
+
+    }
+
+    const canvas =
+
+        resizeRelationInput.canvas
+        ||
+        (
+            resizeRelationInput.canvas =
+                document.createElement("canvas")
+        );
+
+    const context = canvas.getContext("2d");
+
+    if (!context)
+        return;
+
+    context.font = style.font;
+
+    const letterSpacing =
+        parseFloat(style.letterSpacing) || 0;
+
+    const textWidth =
+
+        context.measureText(input.value).width
+
+        +
+
+        Math.max(
+            0,
+            input.value.length - 1
+        )
+
+        *
+
+        letterSpacing;
+
+    const horizontalChrome =
+
+        parseFloat(style.paddingLeft)
+        +
+        parseFloat(style.paddingRight)
+        +
+        parseFloat(style.borderLeftWidth)
+        +
+        parseFloat(style.borderRightWidth);
+
+    const comfortSpace = 28;
+
+    const desiredWidth =
+
+        style.boxSizing === "border-box"
+
+        ?
+
+        textWidth
+        +
+        horizontalChrome
+        +
+        comfortSpace
+
+        :
+
+        textWidth
+        +
+        comfortSpace;
+
+    const maximumWidth =
+
+        style.boxSizing === "border-box"
+
+        ?
+
+        window.innerWidth - 32
+
+        :
+
+        window.innerWidth
+        -
+        32
+        -
+        horizontalChrome;
+
+    input.style.width =
+
+        `${Math.max(
+
+            0,
+
+            Math.min(
+
+                maximumWidth,
+
+                Math.max(
+                    baseWidth,
+                    desiredWidth
+                )
+
+            )
+
+        )}px`;
 
 }
 
@@ -1599,6 +1737,8 @@ function focusPerson(person) {
             person.display_name
             ||
             "";
+
+        resizeRelationInput(input);
 
     }
 
