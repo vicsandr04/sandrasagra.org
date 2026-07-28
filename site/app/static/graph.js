@@ -1258,6 +1258,26 @@ function setupSearch() {
         async event => {
 
             if (
+                event.key === "/"
+                &&
+                !input.value.trim()
+                &&
+                focusedPerson
+            ) {
+
+                event.preventDefault();
+
+                input.value =
+                    `${personName(focusedPerson)} / `;
+
+                resizeRelationInput(input);
+                hideSuggestions();
+
+                return;
+
+            }
+
+            if (
                 event.key === "ArrowDown"
                 ||
                 event.key === "ArrowUp"
