@@ -1010,7 +1010,7 @@ function setupSearch() {
     input.addEventListener(
 
         "keydown",
-        event => {
+        async event => {
 
             if (
                 event.key !== "Enter"
@@ -1025,21 +1025,87 @@ function setupSearch() {
                 return;
 
             const value =
-                input.value.trim().toLowerCase();
+                input.value.trim();
 
             if (!value)
                 return;
 
+            const separatorIndex =
+                value.indexOf("/");
+
+            if (separatorIndex !== -1) {
+
+                event.preventDefault();
+
+                const firstValue =
+                    value.slice(0, separatorIndex).trim();
+
+                const secondValue =
+                    value.slice(separatorIndex + 1).trim();
+
+                const firstPerson =
+
+                    firstValue
+
+                    ?
+
+                    findPersonByName(firstValue)
+
+                    :
+
+                    graph.nodes.find(
+
+                        person =>
+                            String(person.id)
+                            ===
+                            String(focusedPerson)
+
+                    );
+
+                const secondPerson =
+                    findPersonByName(secondValue);
+
+                if (
+                    !firstPerson
+                    ||
+                    !secondPerson
+                )
+                    return;
+
+                try {
+
+                    if (!App.searchStarted)
+                        await beginExploration(firstPerson);
+                    else
+                        await focusPerson(firstPerson);
+
+                } catch (error) {
+
+                    console.error(
+                        "Unable to load the focused family",
+                        error
+                    );
+
+                }
+
+                if (
+                    String(focusedPerson)
+                    !==
+                    String(firstPerson.id)
+                )
+                    return;
+
+                traceRelationshipToFocus(secondPerson);
+
+                input.value =
+                    `${personName(firstPerson.id)} / ${personName(secondPerson.id)}`;
+
+                return;
+
+            }
+
             const person =
-                graph.nodes.find(
-
-                    p =>
-
-                        (p.display_name || p.name)
-                        .toLowerCase()
-                        .includes(value)
-
-                );
+                findPersonByName(value);
 
             if (!person)
                 return;
@@ -1057,6 +1123,38 @@ function setupSearch() {
         }
 
     );
+
+}
+
+function findPersonByName(value) {
+
+    const searchValue =
+        String(value || "").trim().toLowerCase();
+
+    if (!searchValue)
+        return null;
+
+    return graph.nodes.find(
+
+        person =>
+
+            [
+                person.name,
+                person.display_name
+            ]
+
+                .filter(Boolean)
+
+                .some(
+
+                    name =>
+                        name
+                            .toLowerCase()
+                            .includes(searchValue)
+
+                )
+
+    ) || null;
 
 }
 
@@ -1121,7 +1219,7 @@ function beginExploration(person) {
 
     );
 
-    focusPerson(person);
+    const familyReady = focusPerson(person);
 
     setTimeout(
 
@@ -1136,6 +1234,8 @@ function beginExploration(person) {
         2000
 
     );
+
+    return familyReady;
 
 }
 
@@ -1185,7 +1285,7 @@ function focusPerson(person) {
 
     flyCameraTo(person);
 
-    illuminateFamily(person.id);
+    return illuminateFamily(person.id);
 
 }
 
