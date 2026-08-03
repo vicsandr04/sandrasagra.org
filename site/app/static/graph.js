@@ -521,7 +521,7 @@ function fadeUniverse() {
 
         "opacity",
 
-        0.06
+        0.12
 
     );
 
@@ -2053,9 +2053,9 @@ async function illuminateFamily(id) {
 
                 chartPeople.has(String(d.target.id))
 
-                ? .35
+                ? .5
 
-                : .02
+                : .035
 
         );
 
@@ -5422,7 +5422,7 @@ function resetUniverse(){
 
         .transition()
 
-        .style("opacity",0.06);
+        .style("opacity",0.12);
 
 }
 
