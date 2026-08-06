@@ -818,7 +818,7 @@ LINEAGE LOGIN
 
     color:rgba(255,255,255,.78);
 
-    font-size:18px;
+    font-size:31.5px;
 
     font-weight:300;
 
@@ -869,7 +869,7 @@ NAVIGATION GUIDE
 
     font:inherit;
 
-    font-size:18px;
+    font-size:31.5px;
 
     font-weight:300;
 
@@ -1648,7 +1648,7 @@ TABLET
 
         max-width:44vw;
 
-        font-size:16px;
+        font-size:28px;
 
     }
 
@@ -1659,7 +1659,7 @@ TABLET
 
         right:calc(24px + env(safe-area-inset-right));
 
-        font-size:16px;
+        font-size:28px;
 
     }
 
@@ -1801,7 +1801,7 @@ PHONE
 
         max-width:55vw;
 
-        font-size:14px;
+        font-size:24.5px;
 
         text-align:left;
 
@@ -1814,7 +1814,7 @@ PHONE
 
         right:calc(16px + env(safe-area-inset-right));
 
-        font-size:14px;
+        font-size:24.5px;
 
         letter-spacing:.08em;
 
@@ -2035,7 +2035,7 @@ PHONE — LANDSCAPE
 
         top:calc(8px + env(safe-area-inset-top));
 
-        font-size:12px;
+        font-size:21px;
 
     }
 
@@ -2044,7 +2044,7 @@ PHONE — LANDSCAPE
 
         top:calc(8px + env(safe-area-inset-top));
 
-        font-size:12px;
+        font-size:21px;
 
     }
 
