@@ -4576,6 +4576,30 @@ function nodeClick(event,d){
 
     if (isTouchDevice()) {
 
+        if (!App.searchStarted)
+            beginExploration(d);
+        else
+            focusPerson(d);
+
+        const input = document.getElementById(
+            "relation-input"
+        );
+
+        if (input) {
+
+            input.focus({
+                preventScroll: true
+            });
+
+            const inputEnd = input.value.length;
+
+            input.setSelectionRange(
+                inputEnd,
+                inputEnd
+            );
+
+        }
+
         d3.select(this)
 
             .interrupt()
