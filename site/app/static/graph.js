@@ -521,7 +521,7 @@ function fadeUniverse() {
 
         "opacity",
 
-        0.20
+        0.30
 
     );
 
